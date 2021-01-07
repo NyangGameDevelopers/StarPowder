@@ -213,7 +213,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &534655383
 GameObject:
@@ -305,7 +305,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!1 &951712102
 GameObject:
@@ -383,12 +383,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 951712102}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_Father: {fileID: 1786412459}
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1786412458
 GameObject:
@@ -402,6 +402,7 @@ GameObject:
   - component: {fileID: 1786412460}
   - component: {fileID: 1786412461}
   - component: {fileID: 1786412462}
+  - component: {fileID: 1786412463}
   m_Layer: 0
   m_Name: Player Character
   m_TagString: Untagged
@@ -421,8 +422,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 472422565808698319}
+  - {fileID: 951712105}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1786412460
 MonoBehaviour:
@@ -436,9 +438,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0cd56a3d90dc4940b4fe7ea9e0bb32d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _moveSpeed: 3
-  _turningSpeed: 1
-  _runSpeedMultiplier: 1.2
+  _moveSpeed: 10
+  _turningSpeed: 10
+  _runSpeedMultiplier: 2
+  rotSpeedX: 10
+  rotSpeedY: 10
+  rotDamp: 10
+  walkSpeed: 3
+  runSpeed: 3
+  runKey: 306
+  playerCamera: {fileID: 951712102}
 --- !u!54 &1786412461
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -469,6 +478,24 @@ CapsuleCollider:
   m_Height: 1.6
   m_Direction: 1
   m_Center: {x: 0, y: 0.8, z: 0}
+--- !u!143 &1786412463
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1786412458}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!137 &472422565796701089
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0
