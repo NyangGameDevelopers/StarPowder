@@ -3,9 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// ë‚ ì§œ : 2021-01-12 PM 4:37:59 [ì¸ì½”ë”© ìˆ˜ì •]
+// ì‘ì„±ì : Rito
+
 namespace Rito.BehaviorTree
 {
-    /// <summary> ÀÚ½ÄµéÀ» ¼øÈ¸ÇÏ¸ç trueÀÎ °Í ÇÏ³ª¸¸ ¼öÇàÇÏ´Â ³ëµå </summary>
+    /// <summary> ìì‹ë“¤ì„ ìˆœíšŒí•˜ë©° trueì¸ ê²ƒ í•˜ë‚˜ë§Œ ìˆ˜í–‰í•˜ëŠ” ë…¸ë“œ </summary>
     public class SelectorNode : CompositeNode
     {
         public SelectorNode(params INode[] nodes) : base(nodes) { }
