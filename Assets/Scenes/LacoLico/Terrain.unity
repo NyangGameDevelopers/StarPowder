@@ -291,7 +291,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 200613995}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -819.0058, y: -30.899498, z: -790.5887}
+  m_LocalPosition: {x: 0, y: 2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 455732209}
@@ -324,16 +324,16 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 218878145}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2038651893}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 10, y: 10}
+  m_SizeDelta: {x: -562, y: -510}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &218878147
 MonoBehaviour:
@@ -421,6 +421,7 @@ MonoBehaviour:
   isSprinting: 0
   walkSpeed: 3
   sprintSpeed: 6
+  mouseSpeed: 5
   jumpForce: 5
   gravity: -9.8
   playerWidth: 0.3
@@ -676,13 +677,21 @@ MonoBehaviour:
     rightFaceTexture: 0
   - blockName: Bedrock
     isSolid: 1
+    backFaceTexture: 0
+    frontFaceTexture: 0
+    topFaceTexture: 0
+    bottomFaceTexture: 0
+    leftFaceTexture: 0
+    rightFaceTexture: 0
+  - blockName: Stone
+    isSolid: 1
     backFaceTexture: 1
     frontFaceTexture: 1
     topFaceTexture: 1
     bottomFaceTexture: 1
     leftFaceTexture: 1
     rightFaceTexture: 1
-  - blockName: Stone
+  - blockName: Grass
     isSolid: 1
     backFaceTexture: 2
     frontFaceTexture: 2
@@ -690,7 +699,7 @@ MonoBehaviour:
     bottomFaceTexture: 2
     leftFaceTexture: 2
     rightFaceTexture: 2
-  - blockName: Grass
+  - blockName: Sand
     isSolid: 1
     backFaceTexture: 3
     frontFaceTexture: 3
@@ -698,7 +707,7 @@ MonoBehaviour:
     bottomFaceTexture: 3
     leftFaceTexture: 3
     rightFaceTexture: 3
-  - blockName: Sand
+  - blockName: Dirt
     isSolid: 1
     backFaceTexture: 4
     frontFaceTexture: 4
@@ -706,14 +715,6 @@ MonoBehaviour:
     bottomFaceTexture: 4
     leftFaceTexture: 4
     rightFaceTexture: 4
-  - blockName: Dirt
-    isSolid: 1
-    backFaceTexture: 5
-    frontFaceTexture: 5
-    topFaceTexture: 5
-    bottomFaceTexture: 5
-    leftFaceTexture: 5
-    rightFaceTexture: 5
   debugScreen: {fileID: 0}
 --- !u!4 &1152595363
 Transform:
