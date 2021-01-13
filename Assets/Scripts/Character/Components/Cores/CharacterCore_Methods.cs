@@ -9,7 +9,23 @@ using UnityEngine;
 public partial class CharacterCore : MonoBehaviour
 {
     /***********************************************************************
-    *                               Init Methods
+    *             PUBLIC : Player Action, Interaction Methods
+    ***********************************************************************/
+    #region .
+    /// <summary> 피해 입히기 </summary>
+    public void DoDamage(float damage) { }
+
+    /// <summary> 기절시키기 </summary>
+    public void DoStun(float duration) => Current.stunDuration = duration;
+
+    /// <summary> 속박시키기 </summary>
+    public void DoBind(float duration) => Current.bindDuration = duration;
+
+    #endregion
+
+
+    /***********************************************************************
+    *                            Init Methods
     ***********************************************************************/
     #region .
 
@@ -23,6 +39,10 @@ public partial class CharacterCore : MonoBehaviour
         TPCam = GetComponentInAllChildren<ThirdPersonCamera>();
         FPCam.Init();
         TPCam.Init();
+
+        var weaponRig = GetComponentInAllChildren<WeaponRig>();
+        if (weaponRig != null)
+            WeaponRigGo = weaponRig.gameObject;
 
         // Error Check
         if (RBody == null) Debug.LogError("플레이어 캐릭터에 리지드바디가 존재하지 않습니다.");
@@ -43,15 +63,31 @@ public partial class CharacterCore : MonoBehaviour
         _tpCamToRigDir = TPCam.transform.InverseTransformDirection(camToRig).normalized;
         _tpCamZoomInitialDistance = Vector3.Magnitude(camToRig);
 
+        // 초기 설정들
         SetCameraView(State.currentView); // 초기 뷰 설정
         SetCameraAlone(); // 카메라 한개 빼고 전부 비활성화
+        SetBehaviorMode(BehaviorMode.None);
     }
 
     #endregion
     /***********************************************************************
-    *                               Setter Methods
+    *                            Setter, Changer Methods
     ***********************************************************************/
     #region .
+    private void SetDeadState(bool value) => State.isDead = value;
+    private void SetStunState(bool value) => State.isStunned = value;
+    private void SetBindState(bool value) => State.isBinded = value;
+    private void SetGroundState(bool value) => State.isGrounded = value;
+    private void SetRollState(bool value) => State.isRolling = value;
+    private void SetMovingState(bool value) => State.isMoving = value;
+    private void SetWalkingState(bool value) => State.isWalking = value;
+    private void SetRunningState(bool value) => State.isRunning = value;
+
+    private void SetBehaviorMode(BehaviorMode mode)
+    {
+        State.behaviorMode = mode;
+        WeaponRigGo.SetActive(!mode.Equals(BehaviorMode.None));
+    }
 
     private void SetCursorVisibleState(bool value)
     {
@@ -67,10 +103,10 @@ public partial class CharacterCore : MonoBehaviour
         }
     }
 
-    private void SetCameraView(CameraViewOptions view)
+    private void SetCameraView(CameraViewOption view)
     {
         State.currentView = view;
-        bool isFP = view == CameraViewOptions.FirstPerson;
+        bool isFP = view == CameraViewOption.FirstPerson;
 
         FPCam.Cam.gameObject.SetActive(isFP);
         TPCam.Cam.gameObject.SetActive(!isFP);
@@ -102,25 +138,44 @@ public partial class CharacterCore : MonoBehaviour
 
     #endregion
     /***********************************************************************
-    *                            Toggle Methods
+    *                            Toggle, Update Methods
     ***********************************************************************/
     #region .
     private void ToggleCameraView()
     {
-        SetCameraView(State.currentView == CameraViewOptions.FirstPerson ?
-            CameraViewOptions.ThirdPerson : CameraViewOptions.FirstPerson);
+        SetCameraView(State.currentView == CameraViewOption.FirstPerson ?
+            CameraViewOption.ThirdPerson : CameraViewOption.FirstPerson);
+    }
+
+    /// <summary> 현재 캐릭터의 이동방향 설정 </summary>
+    private void UpdateMoveDirection(Vector3 moveDir)
+    {
+        if (Plus(moveDir.z))
+        {
+            if      (Minus(moveDir.x)) State.currentMoveDirection = MoveDirection.FrontLeft;
+            else if (Plus(moveDir.x))  State.currentMoveDirection = MoveDirection.FrontRight;
+            else State.currentMoveDirection = MoveDirection.Front;
+        }
+        else if (Minus(moveDir.z))
+        {
+            if      (Minus(moveDir.x)) State.currentMoveDirection = MoveDirection.Backleft;
+            else if (Plus(moveDir.x))  State.currentMoveDirection = MoveDirection.BackRight;
+            else State.currentMoveDirection = MoveDirection.Back;
+        }
+        else
+        {
+            if      (Minus(moveDir.x)) State.currentMoveDirection = MoveDirection.Left;
+            else if (Plus(moveDir.x))  State.currentMoveDirection = MoveDirection.Right;
+            else State.currentMoveDirection = MoveDirection.None;
+        }
+
+        bool Plus(in float value) => (value > 0.1f);
+        bool Minus(in float value) => (value < -0.1f);
     }
 
     #endregion
     /***********************************************************************
-    *                          Calculation Methods
-    ***********************************************************************/
-    #region .
-
-
-    #endregion
-    /***********************************************************************
-    *                           Finder Methods
+    *                             Finder Methods
     ***********************************************************************/
     #region .
     /// <summary> Active False인 자식도 다 뒤져서 컴포넌트 찾아오기 </summary>

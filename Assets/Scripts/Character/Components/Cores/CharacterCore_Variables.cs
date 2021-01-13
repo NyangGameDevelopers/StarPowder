@@ -9,12 +9,21 @@ using UnityEngine;
 public partial class CharacterCore : MonoBehaviour
 {
     /***********************************************************************
-    *                             Core - Variables
+    *                              Const Variables
+    ***********************************************************************/
+    #region .
+    public const int AnimationFull = 0;
+    public const int AnimationUpper = 1;
+
+    #endregion
+    /***********************************************************************
+    *                              Variables
     ***********************************************************************/
 
     //[SerializeField]
-    /// <summary> WASD 이동 벡터 </summary>
+    /// <summary> WASD 이동 벡터 : 월드기준, 정규화값 </summary>
     private Vector3 _moveDir;
+    private Vector3 _worldMoveDir;
 
     /// <summary> TP 카메라 -> Rig 방향 벡터 </summary>
     private Vector3 _tpCamToRigDir;
@@ -35,6 +44,7 @@ public partial class CharacterCore : MonoBehaviour
 
     /// <summary> 현재 선택된 카메라 </summary>
     private PersonalCamera _currentCam;
+
     /// <summary> 현재 선택된 카메라의 옵션 </summary>
     private CameraOption _currentCamOption;
 
@@ -49,6 +59,8 @@ public partial class CharacterCore : MonoBehaviour
 
     public FirstPersonCamera FPCam { get; private set; }
     public ThirdPersonCamera TPCam { get; private set; }
+
+    public GameObject WeaponRigGo { get; private set; }
 
     #endregion
 }

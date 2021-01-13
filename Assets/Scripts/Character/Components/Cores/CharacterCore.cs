@@ -13,65 +13,30 @@ using static Rito.BehaviorTree.NodeHelper;
 [RequireComponent(typeof(Rigidbody))]
 public partial class CharacterCore : MonoBehaviour
 {
-    INode _root;
-    INode _inputParallel;
-    INode _actionSelector;
-    INode _animationSelector;
-
     private void Awake()
     {
+        MakeBehaviorNodes();
         InitializeComponents();
         InitializeValues();
     }
 
     private void Start()
     {
-        MakeNodes();
         StartCoroutines();
     }
 
     private void Update()
     {
-        _root.Run();
+        _currentBehavior.Run();
+
+        if (Input.GetKeyDown(KeyCode.U)) DoStun(2f);
+        if (Input.GetKeyDown(KeyCode.I)) DoBind(2f);
+        if (Input.GetKeyDown(KeyCode.O)) Die();
+        if (Input.GetKeyDown(KeyCode.P)) Revive();
     }
 
     private void StartCoroutines()
     {
         StartCoroutine(CameraZoomRoutine());
-    }
-
-    private void MakeNodes()
-    {
-        _inputParallel = 
-            Parallel
-            (
-                Action(Input_ChangeCamView)
-                ,Action(Input_SetCursorVisibleState)
-                ,Action(Input_RotatePlayerCamera)
-                ,Action(Input_CameraZoom)
-                ,Action(Input_CalculateKeyMoveDir)
-            );
-
-        _actionSelector =
-            Selector
-            (
-                Action(MoveByKeyboard)
-            );
-
-        _animationSelector =
-            Selector
-            (
-                IfAction(PlayerIsWalking, PlayWalkAnimation)
-                ,IfAction(PlayerIsRunning, PlayRunAnimation)
-                ,Action(PlayIdleAnimation)
-            );
-
-        _root =
-            Parallel
-            (
-                _inputParallel
-                ,_actionSelector
-                ,_animationSelector
-            );
     }
 }

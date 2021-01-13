@@ -12,10 +12,34 @@ public partial class CharacterCore : MonoBehaviour
     /***********************************************************************
     *                        Core - Enum Definitions
     ***********************************************************************/
+    public enum MouseButton
+    {
+        Left, Right, Middle
+    }
 
-    public enum CameraViewOptions
+    public enum CameraViewOption
     {
         FirstPerson,
         ThirdPerson
+    }
+
+    /// <summary> 캐릭터의 이동 방향 </summary>
+    public enum MoveDirection
+    {
+        None, // 정지
+        Front,
+        FrontLeft,
+        FrontRight,
+        Left,
+        Right,
+        Back,
+        Backleft,
+        BackRight
+    }
+
+    public enum BehaviorMode
+    {
+        None,
+        Battle,
     }
 }

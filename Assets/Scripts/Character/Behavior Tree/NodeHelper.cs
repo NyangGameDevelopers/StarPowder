@@ -14,9 +14,11 @@ namespace Rito.BehaviorTree
         public static INode Parallel(params INode[] nodes) => new ParallelNode(nodes);
 
         public static INode IfAction(Func<bool> condition, Action action) => new IfActionNode(condition, action);
+        public static INode IfNotAction(Func<bool> condition, Action action) => new IfNotActionNode(condition, action);
         public static INode IfElseAction(Func<bool> condition, Action ifAction, Action ifElseAction) => new IfElseActionNode(condition, ifAction, ifElseAction);
 
         public static INode Condition(Func<bool> condition) => new ConditionNode(condition);
+        public static INode NotCondition(Func<bool> condition) => new NotConditionNode(condition);
         public static INode Action(Action action) => new ActionNode(action);
     }
 }

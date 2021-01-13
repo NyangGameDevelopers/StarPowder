@@ -9,7 +9,45 @@ using UnityEngine;
 public partial class CharacterCore : MonoBehaviour
 {
     /***********************************************************************
-    *                           Core - Coroutines
+    *                             Action Routines
+    ***********************************************************************/
+    #region .
+    private IEnumerator RollRoutine()
+    {
+        Vector3 rollDir = _moveDir;
+
+        // WASD 입력 없으면 전방으로 구르기
+        if (rollDir.magnitude < 0.1f)
+            rollDir = Vector3.forward;
+
+        // 애니메이션 파라미터 설정
+        Anim.SetFloat("Roll X", rollDir.x);
+        Anim.SetFloat("Roll Z", rollDir.z);
+
+        Vector3 localDir = transform.TransformDirection(rollDir);
+
+        while (State.isRolling)
+        {
+            float x = Current.rollDuration / Duration.roll;
+            //x = Mathf.Sqrt(Mathf.Pow(x, 3f));
+            Vector3 next = localDir * Speed.moveSpeed * Move.rollDistance * x;
+
+            RBody.velocity =
+                new Vector3(next.x, RBody.velocity.y, next.z);
+
+            yield return null;
+        }
+        RBody.velocity = default;
+    }
+
+    private IEnumerator AttackRoutine()
+    {
+        yield return null;
+    }
+
+    #endregion
+    /***********************************************************************
+    *                               Infinite Routines
     ***********************************************************************/
     #region .
     private IEnumerator CameraZoomRoutine()

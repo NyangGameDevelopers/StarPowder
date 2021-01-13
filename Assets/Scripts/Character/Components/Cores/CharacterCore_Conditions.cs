@@ -14,9 +14,30 @@ public partial class CharacterCore : MonoBehaviour
     ***********************************************************************/
     #region .
 
-    private bool PlayerIsWalking() => State.isWalking;
+    private bool CharacterIsUnableToMove()
+        => State.isDead || State.isStunned || State.isBinded || State.isRolling;
 
-    private bool PlayerIsRunning() => State.isRunning;
+    private bool CharacterIsDead() => State.isDead;
+    private bool CharacterIsStunned() => State.isStunned;
+    private bool CharacterIsBinded() => State.isBinded;
+    private bool CharacterIsGrounded() => State.isGrounded;
+
+    private bool CharacterIsRolling() => State.isRolling;
+    private bool CharacterIsMoving() => State.isMoving;
+    private bool CharacterIsMovingOnGround() => State.isMoving && State.isGrounded;
+    private bool CharacterIsWalking() => State.isWalking;
+    private bool CharacterIsRunning() => State.isRunning;
+    private bool CharacterIsPlayingAttackMotion() => Current.attackMotionDuration > 0f;
+
+    private bool OnAttackCooldown() => Current.attackCooldown > 0f;
+    private bool OnRollingCooldown() => Current.rollCooldown > 0f;
+
+    private bool RollKeyDown() => Input.GetKeyDown(Key.roll);
+    private bool JumpKeyDown() => Input.GetKeyDown(Key.jump);
+    private bool AttackKeyDown() => Input.GetMouseButtonDown((int)Key.attack);
+
+
+    private bool CharacterIsBattleMode() => State.behaviorMode.Equals(BehaviorMode.Battle);
 
     #endregion
 }

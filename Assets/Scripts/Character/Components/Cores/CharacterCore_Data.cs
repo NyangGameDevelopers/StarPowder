@@ -9,29 +9,90 @@ public partial class CharacterCore : MonoBehaviour
     /***********************************************************************
     *                         Core - Data Variables
     ***********************************************************************/
-    public KeyOption Key => _keyOption;
-    public MoveOptionInfo Move => _moveOption;
-    public AnimationNameInfo AnimationName => _animationName;
+    public CooldownInfo Cooldown => _cooldown;
+    public DurationInfo Duration => _duration;
 
-    public CameraOptionFirstPerson FPCamOption => _firstPersonCameraOption;
-    public CameraOptionThirdPerson TPCamOption => _thirdPersonCameraOption;
+    public KeyOption Key => _keyOption;
+    public SpeedOption Speed => _speedOption;
+    public MoveOption Move => _moveOption;
+    public SpecialSkillOption Skill => _skillOption;
+
+    public AnimationNameSet_ AnimationNameSet => _animationNameSet;
+
+    public FirstPersonCameraOption FPCamOption => _firstPersonCameraOption;
+    public ThirdPersonCameraOption TPCamOption => _thirdPersonCameraOption;
 
     /***********************************************************************
-    *                               Animations
+    *                               Cooldowns
     ***********************************************************************/
     #region .
     [Serializable]
-    public class AnimationNameInfo
+    public class CooldownInfo
     {
-        public string idle = "IDLE";
-        public string walk = "WALK";
-        public string run = "RUN";
+        [Tooltip("구르기 끝난 직후로부터 재사용 쿨타임")]
+        public float roll = 0.5f;
+        [Tooltip("공격 쿨타임")]
+        public float attack = 1.0f;
     }
-    [SerializeField, Tooltip("연결된 애니메이터의 각 애니메이션 이름 정확히 등록")]
-    private AnimationNameInfo _animationName = new AnimationNameInfo();
+    //[SerializeField, Tooltip("행동 쿨타임들")]
+    private CooldownInfo _cooldown = new CooldownInfo();
 
     #endregion
+    /***********************************************************************
+    *                               Durations
+    ***********************************************************************/
+    #region .
+    [Serializable]
+    public class DurationInfo
+    {
+        [Tooltip("구르기 및 애니메이션 지속시간")]
+        public float roll = 1.0f;
+        [Tooltip("공격 모션 지속시간")]
+        public float attack = 2.0f;
+        [Tooltip("공격 모션 이어서 재생할 수 있는 허용 시간")]
+        public float continousAttack = 0.4f;
+    }
+    //[SerializeField, Tooltip("지속시간(애니메이션 포함)")]
+    private DurationInfo _duration = new DurationInfo();
 
+    #endregion
+    /***********************************************************************
+    *                               Animation Names
+    ***********************************************************************/
+    #region .
+    [Serializable]
+    public class AnimationNameSet_
+    {
+        public string none = "NONE";
+        public string idle = "IDLE";
+        public string bind = "BIND";
+        public string stun = "STUN";
+
+        // 사망
+        public string die = "DIE";
+
+        // 죽은채로 엎어져 있기
+        public string HoldDie = "HOLD_DIE";
+
+        // 걷기, 달리기
+        public string move = "MOVE";
+
+        // 구르기
+        public string roll = "ROLL";
+
+        //====================== Upper 레이어(상체) 애니메이션 ===================
+        public string upperNone = "NONE";
+
+        // 근접 무기
+        public string upperBattleIdle = "BATTLE_IDLE";
+        public string upperBattleMove = "BATTLE_MOVE";
+        public string upperBattleAttack0 = "BATTLE_ATTACK_0";
+        public string upperBattleAttack1 = "BATTLE_ATTACK_1";
+    }
+    //[SerializeField, Tooltip("연결된 애니메이터의 각 애니메이션 이름 정확히 등록")]
+    private AnimationNameSet_ _animationNameSet = new AnimationNameSet_();
+
+    #endregion
     /***********************************************************************
     *                               Key Options
     ***********************************************************************/
@@ -44,16 +105,42 @@ public partial class CharacterCore : MonoBehaviour
         public KeyCode moveLeft  = KeyCode.A;
         public KeyCode moveRight = KeyCode.D;
 
-        public KeyCode run = KeyCode.LeftShift;
+        [Space]
+        public KeyCode run = KeyCode.LeftControl;
+        public KeyCode roll = KeyCode.LeftShift;
+        public KeyCode jump = KeyCode.Space;
 
-        [Tooltip("마우스 커서 보이기/감추기 토글")]
+        [Tooltip("마우스 커서 보이기/감추기 토글"), Space]
         public KeyCode showCursorToggle = KeyCode.LeftAlt;
 
         [Tooltip("1인칭 / 3인칭 카메라 변경 토글")]
         public KeyCode changeViewToggle = KeyCode.Tab;
+
+        [Space]
+        public KeyCode changeBehaviorMode = KeyCode.E;
+        public MouseButton attack = MouseButton.Right;
     }
     [SerializeField]
     private KeyOption _keyOption = new KeyOption();
+
+    #endregion
+    /***********************************************************************
+    *                               Speed Options
+    ***********************************************************************/
+    #region .
+    [Serializable]
+    public class SpeedOption
+    {
+        [Range(1f, 2f), Tooltip("캐릭터 공격속도")]
+        public float attackSpeed = 1f;
+        [Range(1f, 20f), Tooltip("캐릭터 이동속도")]
+        public float moveSpeed = 3f;
+        [Range(1f, 3f), Tooltip("달리기 이동속도 배수(달리기 이동속도 = 캐릭터 이동속도 X 달리기 배수)")]
+        public float runSpeedMultiplier = 1.5f;
+
+    }
+    [SerializeField]
+    private SpeedOption _speedOption = new SpeedOption();
 
     #endregion
     /***********************************************************************
@@ -61,18 +148,18 @@ public partial class CharacterCore : MonoBehaviour
     ***********************************************************************/
     #region .
     [Serializable]
-    public class MoveOptionInfo
+    public class MoveOption
     {
-        [Range(1f, 20f), Tooltip("캐릭터 이동속도")]
-        public float moveSpeed = 3f;
-        [Range(1f, 3f), Tooltip("달리기 이동속도 배수(달리기 이동속도 = 캐릭터 이동속도 X 달리기 배수)")]
-        public float runSpeedMultiplier = 1.5f;
+        [Range(1f, 5f), Tooltip("구르기 이동거리")]
+        public float rollDistance = 3f;
+
+        [Range(1f, 10f), Tooltip("점프점프")]
+        public float jumpForce = 6f;
     }
     [SerializeField]
-    private MoveOptionInfo _moveOption = new MoveOptionInfo();
+    private MoveOption _moveOption = new MoveOption();
 
     #endregion
-
     /***********************************************************************
     *                             Camera Options
     ***********************************************************************/
@@ -90,16 +177,16 @@ public partial class CharacterCore : MonoBehaviour
     }
 
     [Serializable]
-    public class CameraOptionFirstPerson : CameraOption
+    public class FirstPersonCameraOption : CameraOption
     {
         ///// <summary> 리깅된 머리 트랜스폼 연결 </summary>
         //public Transform headTran; // 직접 조작 안됨
     }
     [SerializeField]
-    private CameraOptionFirstPerson _firstPersonCameraOption = new CameraOptionFirstPerson();
+    private FirstPersonCameraOption _firstPersonCameraOption = new FirstPersonCameraOption();
 
     [Serializable]
-    public class CameraOptionThirdPerson : CameraOption
+    public class ThirdPersonCameraOption : CameraOption
     {
         [Range(0f, 3.5f), Space, Tooltip("줌 확대 최대 거리")]
         public float zoomInDistance = 3f;
@@ -109,7 +196,23 @@ public partial class CharacterCore : MonoBehaviour
         public float zoomSpeed = 5f;
     }
     [SerializeField]
-    private CameraOptionThirdPerson _thirdPersonCameraOption = new CameraOptionThirdPerson();
+    private ThirdPersonCameraOption _thirdPersonCameraOption = new ThirdPersonCameraOption();
+
+    #endregion
+    /***********************************************************************
+    *                             Special Skills
+    ***********************************************************************/
+    #region .
+    [Serializable]
+    public class SpecialSkillOption
+    {
+        [Tooltip("공중에서 한번 더 점프")]
+        public bool doubleJump = false;
+        [Tooltip("공중 구르기")]
+        public bool airTumbling = false;
+    }
+    [SerializeField]
+    private SpecialSkillOption _skillOption = new SpecialSkillOption();
 
     #endregion
 }
