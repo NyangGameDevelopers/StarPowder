@@ -27,9 +27,9 @@ public partial class CharacterCore : MonoBehaviour
     private bool CharacterIsMovingOnGround() => State.isMoving && State.isGrounded;
     private bool CharacterIsWalking() => State.isWalking;
     private bool CharacterIsRunning() => State.isRunning;
-    private bool CharacterIsPlayingAttackMotion() => Current.attackMotionDuration > 0f;
 
-    private bool OnAttackCooldown() => Current.attackCooldown > 0f;
+    private bool OnTotalAttackCooldown() => Current.attackCooldown > 0f;
+    private bool OnFirstAttackCooldown() => Current.firstAttackCooldown > 0f;
     private bool OnRollingCooldown() => Current.rollCooldown > 0f;
 
     private bool RollKeyDown() => Input.GetKeyDown(Key.roll);

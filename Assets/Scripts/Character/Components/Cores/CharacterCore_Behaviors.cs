@@ -38,7 +38,14 @@ public partial class CharacterCore : MonoBehaviour
                 Action(Input_RotatePlayer),
                 Action(Input_CameraZoom),
                 Action(Input_CalculateMoveDirection),
-                IfNotAction(CharacterIsPlayingAttackMotion, Input_ChangeBehaviorMode),
+
+                Sequence // 무기 교체
+                (
+                    NotCondition(CharacterIsDead),
+                    NotCondition(CharacterIsStunned),
+                    NotCondition(OnTotalAttackCooldown),
+                    Action(Input_ChangeBehaviorMode)
+                ),
 
                 Selector // Actions
                 (
@@ -50,16 +57,15 @@ public partial class CharacterCore : MonoBehaviour
                     (
                         Condition(CharacterIsBattleMode),
                         Condition(CharacterIsGrounded),
-                        NotCondition(OnAttackCooldown),
-                        IfAction(AttackKeyDown, Attack),
-                        Action(PlayUpperAttackAnimation)
+                        IfAction(AttackKeyDown, AttackAndPlayAnimation)
                     ),
 
                     Condition(CharacterIsBinded),
 
                     Sequence
                     (
-                        NotCondition(OnAttackCooldown),
+                        //NotCondition(OnTotalAttackCooldown),
+                        NotCondition(OnFirstAttackCooldown),
                         IfAction(JumpKeyDown, Jump),
                         Action(ResetUpperAnimation),
                         Action(PlayIdleAnimation)
@@ -73,17 +79,18 @@ public partial class CharacterCore : MonoBehaviour
                 Selector // Animations
                 (
                     Condition(CharacterIsDead),
-                    IfAction(CharacterIsStunned, PlayStunAnimation),
+                    IfAction(CharacterIsStunned, PlayResetAndStunAnimation),
                     IfAction(CharacterIsBinded,  PlayBindAnimation),
                     IfAction(CharacterIsRolling, PlayRollAnimation),
 
                     Sequence
                     (
                         Condition(CharacterIsBattleMode),
-                        Selector
+                        IfElseAction
                         (
-                            IfAction(CharacterIsMovingOnGround, PlayBattleMoveAnimation),
-                            Action(PlayBattleIdleAnimation)
+                            CharacterIsMovingOnGround,
+                            PlayBattleMoveAnimation,
+                            PlayBattleIdleAnimation
                         )
                     ),
 
