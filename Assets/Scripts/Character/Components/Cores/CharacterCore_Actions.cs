@@ -15,61 +15,43 @@ public partial class CharacterCore : MonoBehaviour
     *                             Animation Players
     ***********************************************************************/
     #region .
-    private void ResetAnimation()
-    {
-        Anim.Play(AnimationNameSet.none);
-    }
-    private void PlayIdleAnimation()
-    {
-        Anim.Play(AnimationNameSet.idle);
-        PlayUpperAnimation(AnimationNameSet.upperBattleIdle);
-    }
+    
+    // 1. All Layer
+    private void ResetAnimation() => Anim.Play(AnimationNameSet.none);
+    private void PlayRollAnimation() => Anim.Play(AnimationNameSet.roll);
     private void PlayBindAnimation() => Anim.Play(AnimationNameSet.bind);
-    private void PlayStunAnimation()
-    {
-        ResetUpperAnimation();
-        Anim.Play(AnimationNameSet.stun);
-    }
+    private void PlayStunAnimation() => Anim.Play(AnimationNameSet.stun);
+    private void PlayDeathAnimation() => Anim.Play(AnimationNameSet.die);
 
-    private void PlayDeathAnimation()
-    {
-        ResetUpperAnimation();
-        Anim.Play(AnimationNameSet.die);
-    }
+    private void PlayIdleAnimation() => Anim.Play(AnimationNameSet.idle);
+    private void PlayMoveAnimation() => Anim.Play(AnimationNameSet.move);
 
-    private void PlayMoveAnimation()
-    {
-        PlayUpperAnimation(AnimationNameSet.upperBattleMove);
-        Anim.Play(AnimationNameSet.move);
-    }
+    private void PlayBattleIdleAnimation() => Anim.Play(AnimationNameSet.battleIdle);
+    private void PlayBattleMoveAnimation() => Anim.Play(AnimationNameSet.battleMove);
 
-    private void PlayRollAnimation()
-    {
-        ResetUpperAnimation();
-        Anim.Play(AnimationNameSet.roll);
-    }
+    // 2. Common Layer
+    private void PlayCommonResetAnimation() => Anim.Play(AnimationNameSet.none, AnimationCommon);
+    private void PlayCommonIdleAnimation() => Anim.Play(AnimationNameSet.idle, AnimationCommon);
+    private void PlayCommonMoveAnimation() => Anim.Play(AnimationNameSet.move, AnimationCommon);
 
+    // 3. Upper Layer
     /// <summary> 상체 애니메이션 초기화 </summary>
-    private void ResetUpperAnimation()
-    {
-        Anim.Play(AnimationNameSet.upperNone, AnimationUpper);
-    }
-
-    /// <summary> 전투모드 상체 애니메이션 재생 </summary>
-    private void PlayUpperAnimation(in string battleAnimationName)
-    {
-        if (CharacterIsBattleMode())
-        {
-            Anim.Play(battleAnimationName, AnimationUpper);
-        }
-        else
-        {
-            ResetUpperAnimation();
-        }
-    }
+    private void ResetUpperAnimation() => Anim.Play(AnimationNameSet.none, AnimationUpper);
 
     /// <summary> 근접 공격 : 상체만 애니메이션 재생 </summary>
-    private void PlayAttackAnimation(int index)
+    private void PlayUpperAttackAnimation()
+    {
+        // 2가지 모션 이어서 재생
+        if (Current.continousAttackDuration > 0 && Current.attackAnimationIndex == 0)
+            Current.attackAnimationIndex = 1;
+        else
+            Current.attackAnimationIndex = 0;
+
+        // 공격속도 적용
+        Anim.SetFloat("Attack Speed", Speed.attackSpeed);
+        PlayUpperAttackAnimation(Current.attackAnimationIndex);
+    }
+    private void PlayUpperAttackAnimation(int index)
     {
         if (index == 0)
         {
@@ -79,11 +61,6 @@ public partial class CharacterCore : MonoBehaviour
         {
             Anim.Play(AnimationNameSet.upperBattleAttack1, AnimationUpper);
         }
-    }
-
-    private void PlayUpperIdleAnimation()
-    {
-        PlayUpperAnimation(AnimationNameSet.upperBattleIdle);
     }
 
     #endregion
@@ -106,11 +83,16 @@ public partial class CharacterCore : MonoBehaviour
         Decline(ref Current.bindDuration, deltaTime);
         Decline(ref Current.attackMotionDuration, deltaTime);
         Decline(ref Current.continousAttackDuration, deltaTime);
+        Decline(ref Current.changeModeDuration, deltaTime);
 
         // 3. Change States
         SetRollState(Current.rollDuration > 0f);
         SetStunState(Current.stunDuration > 0f);
         SetBindState(Current.bindDuration > 0f);
+        SetChangingModeState(Current.changeModeDuration > 0f);
+
+        if (Current.continousAttackDuration < 0.01f)
+            Current.attackAnimationIndex = 1;
 
         void Decline(ref float currentCooldown, in float value)
         {
@@ -165,8 +147,6 @@ public partial class CharacterCore : MonoBehaviour
     /// <summary> 캐릭터 모드 변경 </summary>
     private void ChangeBehaviorMode()
     {
-        if (CharacterIsPlayingAttackMotion()) return;
-
         if (State.behaviorMode.Equals(BehaviorMode.None))
         {
             SetBehaviorMode(BehaviorMode.Battle);
@@ -175,7 +155,6 @@ public partial class CharacterCore : MonoBehaviour
         {
             SetBehaviorMode(BehaviorMode.None);
         }
-        ResetAnimation(); // 위아래 애니메이션 싱크 맞추기 위해 리셋
     }
 
     /// <summary> 공격 및 공격 애니메이션 재생 </summary>
@@ -183,16 +162,6 @@ public partial class CharacterCore : MonoBehaviour
     {
         if (!CharacterIsBattleMode()) return;
         if (OnAttackCooldown()) return;
-
-        // 2가지 모션 이어서 재생
-        if (Current.continousAttackDuration > 0 && Current.attackAnimationIndex == 0)
-            Current.attackAnimationIndex = 1;
-        else
-            Current.attackAnimationIndex = 0;
-        PlayAttackAnimation(Current.attackAnimationIndex);
-
-        // 공격속도 적용
-        Anim.SetFloat("Attack Speed", Speed.attackSpeed);
 
         // 쿨타임, 지속시간 세팅
         Current.attackCooldown = Cooldown.attack / Speed.attackSpeed;
@@ -401,7 +370,7 @@ public partial class CharacterCore : MonoBehaviour
         _worldMoveDir = transform.TransformDirection(_moveDir);
 
         bool isRunningKeyDown = Input.GetKey(Key.run);
-        bool moving = _moveDir.magnitude > 0.1f;
+        bool moving = _moveDir.magnitude > 0.1f && !CharacterIsRolling();
 
         SetMovingState(moving);
         SetWalkingState(moving && !isRunningKeyDown);

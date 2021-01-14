@@ -82,6 +82,7 @@ public partial class CharacterCore : MonoBehaviour
     private void SetMovingState(bool value) => State.isMoving = value;
     private void SetWalkingState(bool value) => State.isWalking = value;
     private void SetRunningState(bool value) => State.isRunning = value;
+    private void SetChangingModeState(bool value) => State.isChangingMode = value;
 
     private void SetBehaviorMode(BehaviorMode mode)
     {

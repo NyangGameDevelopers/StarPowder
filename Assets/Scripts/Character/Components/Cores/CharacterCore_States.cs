@@ -44,6 +44,9 @@ public partial class CharacterCore : MonoBehaviour
         /// <summary> 캐릭터가 공격 모션 중인지 여부 </summary>
         public bool isAttacking;
 
+        /// <summary> 캐릭터 변신중 </summary>
+        public bool isChangingMode;
+
         /// <summary> 현재 커서가 보이는지 여부 </summary>
         public bool isCursorVisible;
 
@@ -70,6 +73,7 @@ public partial class CharacterCore : MonoBehaviour
         public float bindDuration;
         public float attackMotionDuration;
         public float continousAttackDuration;
+        public float changeModeDuration; // 일반 <-> 배틀 모드 전환 중
 
         /// <summary> 지면으로부터의 거리 </summary>
         public float distFromGround;

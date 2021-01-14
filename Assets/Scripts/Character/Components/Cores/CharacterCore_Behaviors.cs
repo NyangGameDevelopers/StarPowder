@@ -25,7 +25,7 @@ public partial class CharacterCore : MonoBehaviour
     #region .
     private void MakeBehaviorNodes()
     {
-        INode ordinary =
+        INode root =
             Parallel
             (
                 // Updates
@@ -38,32 +38,38 @@ public partial class CharacterCore : MonoBehaviour
                 Action(Input_RotatePlayer),
                 Action(Input_CameraZoom),
                 Action(Input_CalculateMoveDirection),
-                IfNotAction(CharacterIsUnableToMove, Input_ChangeBehaviorMode),
+                IfNotAction(CharacterIsPlayingAttackMotion, Input_ChangeBehaviorMode),
 
                 Selector // Actions
                 (
                     Condition(CharacterIsDead),
                     Condition(CharacterIsStunned),
-                    Condition(CharacterIsBinded),
                     Condition(CharacterIsRolling),
+
+                    Sequence
+                    (
+                        Condition(CharacterIsBattleMode),
+                        Condition(CharacterIsGrounded),
+                        NotCondition(OnAttackCooldown),
+                        IfAction(AttackKeyDown, Attack),
+                        Action(PlayUpperAttackAnimation)
+                    ),
+
+                    Condition(CharacterIsBinded),
 
                     Sequence
                     (
                         NotCondition(OnAttackCooldown),
                         IfAction(JumpKeyDown, Jump),
-                        Action(PlayUpperIdleAnimation)
+                        Action(ResetUpperAnimation),
+                        Action(PlayIdleAnimation)
                     ),
 
                     IfAction(RollKeyDown, RollWASD),
-
-                    Sequence
-                    (
-                        Condition(CharacterIsGrounded),
-                        IfAction(AttackKeyDown, Attack)
-                    ),
-
                     Action(MoveWASD)
                 ),
+                //IfNotAction(CharacterIsUnableToMove, MoveWASD),
+
                 Selector // Animations
                 (
                     Condition(CharacterIsDead),
@@ -71,25 +77,22 @@ public partial class CharacterCore : MonoBehaviour
                     IfAction(CharacterIsBinded,  PlayBindAnimation),
                     IfAction(CharacterIsRolling, PlayRollAnimation),
 
-                    Condition(CharacterIsPlayingAttackMotion),
+                    Sequence
+                    (
+                        Condition(CharacterIsBattleMode),
+                        Selector
+                        (
+                            IfAction(CharacterIsMovingOnGround, PlayBattleMoveAnimation),
+                            Action(PlayBattleIdleAnimation)
+                        )
+                    ),
+
                     IfAction(CharacterIsMovingOnGround, PlayMoveAnimation),
                     Action(PlayIdleAnimation)
                 )
             );
 
-        INode meleeWeapon =
-            Parallel
-            (
-
-            );
-
-        INode rangedWeapon =
-            Parallel
-            (
-
-            );
-
-        _currentBehavior = ordinary;
+        _currentBehavior = root;
     }
 
     #endregion

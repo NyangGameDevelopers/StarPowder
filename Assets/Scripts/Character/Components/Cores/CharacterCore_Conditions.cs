@@ -34,10 +34,13 @@ public partial class CharacterCore : MonoBehaviour
 
     private bool RollKeyDown() => Input.GetKeyDown(Key.roll);
     private bool JumpKeyDown() => Input.GetKeyDown(Key.jump);
+    private bool ChangeModeKeyDown() => Input.GetKeyDown(Key.changeBehaviorMode);
     private bool AttackKeyDown() => Input.GetMouseButtonDown((int)Key.attack);
 
 
-    private bool CharacterIsBattleMode() => State.behaviorMode.Equals(BehaviorMode.Battle);
+    private bool CharacterIsBattleMode() => 
+        !State.isChangingMode &&
+        State.behaviorMode.Equals(BehaviorMode.Battle);
 
     #endregion
 }
