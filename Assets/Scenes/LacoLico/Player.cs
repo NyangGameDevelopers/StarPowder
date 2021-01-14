@@ -123,7 +123,7 @@ public class Player : MonoBehaviour
             if (selectedBlockIndex < 1)
                 selectedBlockIndex = (byte)(world.blocktypes.Length - 1);
 
-            selectedBlockText.text = world.blocktypes[selectedBlockIndex].blockName + " block selected";
+            //selectedBlockText.text = world.blocktypes[selectedBlockIndex].blockName + " block selected";
 
         }
 
