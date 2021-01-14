@@ -1,7 +1,7 @@
 fileFormatVersion: 2
 guid: bec5f2e4b09995447a8062cc85a1bfc5
 ModelImporter:
-  serializedVersion: 19300
+  serializedVersion: 20101
   internalIDToNameTable:
   - first:
       1: 100000
@@ -848,7 +848,7 @@ ModelImporter:
         weight: 1
       - path: Root/center/Hips/Spine/Chest/Upper_Chest/Neck/Head/Eye_R
         weight: 1
-      - path: Root/center/Hips/Spine/Chest/Upper_Chest/Neck/Head/Face
+      - path: Root/center/Hips/Spine/Chest/Upper_Chest/Neck/Head/Face_BlendShapes
         weight: 1
       - path: Root/center/Hips/Spine/Chest/Upper_Chest/Neck/Head/Hair_DownTwinTail_L_00
         weight: 1
@@ -1049,11 +1049,13 @@ ModelImporter:
     importBlendShapes: 1
     importCameras: 0
     importLights: 0
+    fileIdsGeneration: 1
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
     keepQuads: 0
     weldVertices: 1
+    bakeAxisConversion: 0
     preserveHierarchy: 0
     skinWeightsMode: 0
     maxBonesPerVertex: 4
@@ -1063,6 +1065,9 @@ ModelImporter:
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
   tangentSpace:
