@@ -44,6 +44,9 @@ public partial class CharacterCore : MonoBehaviour
         /// <summary> 캐릭터가 공격 모션 중인지 여부 </summary>
         public bool isAttacking;
 
+        /// <summary> 캐릭터 변신중 </summary>
+        public bool isChangingMode;
+
         /// <summary> 현재 커서가 보이는지 여부 </summary>
         public bool isCursorVisible;
 
@@ -60,22 +63,22 @@ public partial class CharacterCore : MonoBehaviour
     [Serializable]
     public class CurrentStateValues
     {
-        // Cooldowns : 쿨타임
+        // Cooldowns : 잔여 쿨타임
         public float rollCooldown;
         public float attackCooldown;
+        public float firstAttackCooldown;
 
-        // Durations : 진행(지속) 시간
+        // Durations : 잔여 진행(지속) 시간
         public float rollDuration;
         public float stunDuration;
         public float bindDuration;
-        public float attackMotionDuration;
-        public float continousAttackDuration;
+        public float secondAttackChanceDuration;
 
         /// <summary> 지면으로부터의 거리 </summary>
         public float distFromGround;
 
         /// <summary> 근접공격 애니메이션 재생할 차례 </summary>
-        public int attackAnimationIndex = 0;
+        public int attackMotionIndex = 0;
 
         /// <summary> 더블점프를 썼는지 여부 </summary>
         public bool doubleJumped;

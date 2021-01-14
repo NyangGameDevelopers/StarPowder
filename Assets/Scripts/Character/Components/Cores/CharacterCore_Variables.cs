@@ -12,8 +12,9 @@ public partial class CharacterCore : MonoBehaviour
     *                              Const Variables
     ***********************************************************************/
     #region .
-    public const int AnimationFull = 0;
+    public const int AnimationCommon = 0;
     public const int AnimationUpper = 1;
+    //public const int AnimationLower = 2;
 
     #endregion
     /***********************************************************************

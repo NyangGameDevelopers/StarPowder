@@ -35,7 +35,7 @@ namespace Rito.BehaviorTree
             if (result) IfAction();
             else ElseAction();
 
-            return result;
+            return true;
         }
     }
 }

@@ -342,6 +342,7 @@ MonoBehaviour:
     isWalking: 0
     isRunning: 0
     isAttacking: 0
+    isChangingMode: 0
     isCursorVisible: 0
     currentMoveDirection: 0
     currentView: 1
@@ -353,6 +354,7 @@ MonoBehaviour:
     bindDuration: 0
     attackMotionDuration: 0
     continousAttackDuration: 0
+    changeModeDuration: 0
     distFromGround: 0
     attackAnimationIndex: 0
     doubleJumped: 0

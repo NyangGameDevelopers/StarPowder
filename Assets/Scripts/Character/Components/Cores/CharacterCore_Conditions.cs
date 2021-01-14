@@ -27,17 +27,20 @@ public partial class CharacterCore : MonoBehaviour
     private bool CharacterIsMovingOnGround() => State.isMoving && State.isGrounded;
     private bool CharacterIsWalking() => State.isWalking;
     private bool CharacterIsRunning() => State.isRunning;
-    private bool CharacterIsPlayingAttackMotion() => Current.attackMotionDuration > 0f;
 
-    private bool OnAttackCooldown() => Current.attackCooldown > 0f;
+    private bool OnTotalAttackCooldown() => Current.attackCooldown > 0f;
+    private bool OnFirstAttackCooldown() => Current.firstAttackCooldown > 0f;
     private bool OnRollingCooldown() => Current.rollCooldown > 0f;
 
     private bool RollKeyDown() => Input.GetKeyDown(Key.roll);
     private bool JumpKeyDown() => Input.GetKeyDown(Key.jump);
+    private bool ChangeModeKeyDown() => Input.GetKeyDown(Key.changeBehaviorMode);
     private bool AttackKeyDown() => Input.GetMouseButtonDown((int)Key.attack);
 
 
-    private bool CharacterIsBattleMode() => State.behaviorMode.Equals(BehaviorMode.Battle);
+    private bool CharacterIsBattleMode() => 
+        !State.isChangingMode &&
+        State.behaviorMode.Equals(BehaviorMode.Battle);
 
     #endregion
 }

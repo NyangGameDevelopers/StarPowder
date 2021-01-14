@@ -31,8 +31,10 @@ public partial class CharacterCore : MonoBehaviour
     {
         [Tooltip("구르기 끝난 직후로부터 재사용 쿨타임")]
         public float roll = 0.5f;
-        [Tooltip("공격 쿨타임")]
-        public float attack = 1.0f;
+        [Tooltip("전체 공격 쿨타임")]
+        public float attack = 1.5f;
+        [Tooltip("첫번째 공격 이후 두번째 공격을 하기 위한 대기시간")]
+        public float firstAttack = 0.3f;
     }
     //[SerializeField, Tooltip("행동 쿨타임들")]
     private CooldownInfo _cooldown = new CooldownInfo();
@@ -47,10 +49,8 @@ public partial class CharacterCore : MonoBehaviour
     {
         [Tooltip("구르기 및 애니메이션 지속시간")]
         public float roll = 1.0f;
-        [Tooltip("공격 모션 지속시간")]
-        public float attack = 2.0f;
-        [Tooltip("공격 모션 이어서 재생할 수 있는 허용 시간")]
-        public float continousAttack = 0.4f;
+        [Tooltip("두 번째 공격 모션 이어서 재생할 수 있는 허용 시간")]
+        public float secondAttackChance = 0.4f;
     }
     //[SerializeField, Tooltip("지속시간(애니메이션 포함)")]
     private DurationInfo _duration = new DurationInfo();
@@ -64,28 +64,21 @@ public partial class CharacterCore : MonoBehaviour
     public class AnimationNameSet_
     {
         public string none = "NONE";
-        public string idle = "IDLE";
+        public string roll = "ROLL";
         public string bind = "BIND";
         public string stun = "STUN";
-
-        // 사망
-        public string die = "DIE";
-
-        // 죽은채로 엎어져 있기
+        public string die  = "DIE";
         public string HoldDie = "HOLD_DIE";
 
-        // 걷기, 달리기
+        // 평시
+        public string idle = "IDLE";
         public string move = "MOVE";
 
-        // 구르기
-        public string roll = "ROLL";
+        // 근접 무기
+        public string battleIdle = "BATTLE_IDLE";
+        public string battleMove = "BATTLE_MOVE";
 
         //====================== Upper 레이어(상체) 애니메이션 ===================
-        public string upperNone = "NONE";
-
-        // 근접 무기
-        public string upperBattleIdle = "BATTLE_IDLE";
-        public string upperBattleMove = "BATTLE_MOVE";
         public string upperBattleAttack0 = "BATTLE_ATTACK_0";
         public string upperBattleAttack1 = "BATTLE_ATTACK_1";
     }
