@@ -111,7 +111,7 @@ public partial class CharacterCore : MonoBehaviour
 
         [Space]
         public KeyCode changeBehaviorMode = KeyCode.E;
-        public MouseButton attack = MouseButton.Right;
+        public MouseButton attack = MouseButton.Left;
     }
     [SerializeField]
     private KeyOption _keyOption = new KeyOption();

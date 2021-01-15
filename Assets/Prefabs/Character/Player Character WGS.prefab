@@ -309,7 +309,7 @@ MonoBehaviour:
     showCursorToggle: 308
     changeViewToggle: 9
     changeBehaviorMode: 101
-    attack: 1
+    attack: 0
   _speedOption:
     attackSpeed: 1
     moveSpeed: 3
@@ -349,14 +349,13 @@ MonoBehaviour:
   _currentStates:
     rollCooldown: 0
     attackCooldown: 0
+    firstAttackCooldown: 0
     rollDuration: 0
     stunDuration: 0
     bindDuration: 0
-    attackMotionDuration: 0
-    continousAttackDuration: 0
-    changeModeDuration: 0
+    secondAttackChanceDuration: 0
     distFromGround: 0
-    attackAnimationIndex: 0
+    attackMotionIndex: 0
     doubleJumped: 0
 --- !u!1 &154032867117024718
 GameObject:
