@@ -211,10 +211,8 @@ public partial class CharacterCore : MonoBehaviour
 
 
     /// <summary> 이동 방향 코앞에 벽이 있는지 검사 </summary>
-    private void CheckAdjecentToWall(Vector3 worldDIr, out Vector3 wallNormal)
+    private void CheckAdjecentToWall(Vector3 worldDIr)
     {
-        wallNormal = default;
-
         if (worldDIr.magnitude < 0.1f)
         {
             State.isAdjcentToWall = false;
@@ -224,10 +222,10 @@ public partial class CharacterCore : MonoBehaviour
         Vector3 ro = transform.position + Vector3.up * 0.2f;
         Vector3[] rds = {
             _worldMoveDir,
-            Quaternion.Euler(0f, 20f, 0f) * _worldMoveDir,
-            Quaternion.Euler(0f, 40f, 0f) * _worldMoveDir,
-            Quaternion.Euler(0f, -20f, 0f) * _worldMoveDir,
-            Quaternion.Euler(0f, -40f, 0f) * _worldMoveDir
+            Quaternion.Euler(0f, 18f, 0f) * _worldMoveDir,
+            Quaternion.Euler(0f, 35f, 0f) * _worldMoveDir,
+            Quaternion.Euler(0f, -18f, 0f) * _worldMoveDir,
+            Quaternion.Euler(0f, -35f, 0f) * _worldMoveDir
         };
         float d = 0.4f;
 
@@ -244,7 +242,6 @@ public partial class CharacterCore : MonoBehaviour
                 if (dot < 0.05f)
                 {
                     State.isAdjcentToWall = true;
-                    wallNormal = normal;
                     return;
                 }
             }

@@ -190,8 +190,7 @@ public partial class CharacterCore : MonoBehaviour
 
         Vector3 next = _worldMoveDir * Speed.moveSpeed * (State.isRunning ? Speed.runSpeedMultiplier : 1f);
 
-        RBody.velocity =
-            new Vector3(next.x, RBody.velocity.y, next.z);
+        RBody.velocity = new Vector3(next.x, RBody.velocity.y, next.z);
 
         UpdateMoveDirection(_moveDir);
     }
@@ -229,7 +228,7 @@ public partial class CharacterCore : MonoBehaviour
         // 더블점프 시 도움닫기용 속도 초기화
         if (Current.doubleJumped)
         {
-            RBody.velocity.Set(0f, 0f, 0f);
+            RBody.velocity = default;
         }
         RBody.AddForce(Vector3.up * Move.jumpForce, ForceMode.VelocityChange);
     }
@@ -368,15 +367,11 @@ public partial class CharacterCore : MonoBehaviour
         _moveDir.Normalize();
         _worldMoveDir = transform.TransformDirection(_moveDir);
 
-        if (!State.isGrounded)
+        // 벽 매미 현상 방지
+        CheckAdjecentToWall(_worldMoveDir);
+        if (State.isAdjcentToWall)
         {
-            CheckAdjecentToWall(_worldMoveDir, out var wallNormal);
-            if (State.isAdjcentToWall)
-            {
-                _worldMoveDir = default;
-                //_worldMoveDir += wallNormal * 1.05f;
-                //_worldMoveDir.Normalize();
-            }
+            _worldMoveDir = default;
         }
 
         bool isRunningKeyDown = Input.GetKey(Key.run);
