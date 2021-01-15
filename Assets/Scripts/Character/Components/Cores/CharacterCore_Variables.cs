@@ -22,7 +22,7 @@ public partial class CharacterCore : MonoBehaviour
     ***********************************************************************/
 
     //[SerializeField]
-    /// <summary> WASD 이동 벡터 : 월드기준, 정규화값 </summary>
+    /// <summary> WASD 이동 벡터 : 정규화값 </summary>
     private Vector3 _moveDir;
     private Vector3 _worldMoveDir;
 

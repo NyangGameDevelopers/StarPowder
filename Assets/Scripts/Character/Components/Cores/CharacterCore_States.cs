@@ -29,6 +29,9 @@ public partial class CharacterCore : MonoBehaviour
         /// <summary> 땅에 붙어 있음 </summary>
         public bool isGrounded;
 
+        /// <summary> 진행 방향 코앞에 벽이 있음 </summary>
+        public bool isAdjcentToWall;
+
         /// <summary> 구르는 중 </summary>
         public bool isRolling;
 

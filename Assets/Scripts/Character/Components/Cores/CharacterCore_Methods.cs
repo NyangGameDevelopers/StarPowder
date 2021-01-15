@@ -204,4 +204,54 @@ public partial class CharacterCore : MonoBehaviour
     }
 
     #endregion
+    /***********************************************************************
+    *                               Checker Methods
+    ***********************************************************************/
+    #region .
+
+
+    /// <summary> 이동 방향 코앞에 벽이 있는지 검사 </summary>
+    private void CheckAdjecentToWall(Vector3 worldDIr, out Vector3 wallNormal)
+    {
+        wallNormal = default;
+
+        if (worldDIr.magnitude < 0.1f)
+        {
+            State.isAdjcentToWall = false;
+            return;
+        }
+
+        Vector3 ro = transform.position + Vector3.up * 0.2f;
+        Vector3[] rds = {
+            _worldMoveDir,
+            Quaternion.Euler(0f, 20f, 0f) * _worldMoveDir,
+            Quaternion.Euler(0f, 40f, 0f) * _worldMoveDir,
+            Quaternion.Euler(0f, -20f, 0f) * _worldMoveDir,
+            Quaternion.Euler(0f, -40f, 0f) * _worldMoveDir
+        };
+        float d = 0.4f;
+
+        foreach (var rd in rds)
+        {
+            Ray ray = new Ray(ro, rd);
+            bool found = Physics.Raycast(ray, out var hit, d, Layers.GroundMask);
+
+            if (found)
+            {
+                Vector3 normal = hit.normal;
+                float dot = Mathf.Abs(Vector3.Dot(normal, Vector3.up));
+
+                if (dot < 0.05f)
+                {
+                    State.isAdjcentToWall = true;
+                    wallNormal = normal;
+                    return;
+                }
+            }
+        }
+
+        State.isAdjcentToWall = false;
+    }
+
+    #endregion
 }
