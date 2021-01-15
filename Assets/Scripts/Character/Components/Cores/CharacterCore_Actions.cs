@@ -368,6 +368,13 @@ public partial class CharacterCore : MonoBehaviour
         _moveDir.Normalize();
         _worldMoveDir = transform.TransformDirection(_moveDir);
 
+        CheckAdjecentToWall(_worldMoveDir, out var wallNormal);
+        if (State.isAdjcentToWall)
+        {
+            _worldMoveDir += wallNormal * 1.05f;
+            _worldMoveDir.Normalize();
+        }
+
         bool isRunningKeyDown = Input.GetKey(Key.run);
         bool moving = _moveDir.magnitude > 0.1f && !CharacterIsRolling();
 
