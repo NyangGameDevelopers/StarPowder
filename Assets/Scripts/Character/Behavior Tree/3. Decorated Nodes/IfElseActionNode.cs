@@ -8,7 +8,7 @@ namespace Rito.BehaviorTree
     // 조건 참일 경우 IfAction 수행 및 true 리턴
     // 조건 거짓일 경우 ElseAction 수행 및 false 리턴
     /// <summary> 조건에 따른 수행 노드 </summary>
-    public class IfElseActionNode : IDecoratorNode
+    public class IfElseActionNode : ILeafNode
     {
         public Func<bool> Condition { get; private set; }
         public Action IfAction { get; private set; }

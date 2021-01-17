@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Rito.BehaviorTree;
+using Rito.CustomAttributes;
 
 using static Rito.BehaviorTree.NodeHelper;
 
@@ -13,6 +14,18 @@ using static Rito.BehaviorTree.NodeHelper;
 [RequireComponent(typeof(Rigidbody))]
 public partial class CharacterCore : MonoBehaviour
 {
+    /***********************************************************************
+    *                          Debug Variables
+    ***********************************************************************/
+    #region .
+    [BoxHeader("Debug Options", 4, BoxColor = EColor.Violet)]
+    public bool _debugPlayAnimationCall;
+    public bool _debugUpdateActionCall;
+    public bool _debugPlayerActionCall;
+    [SpaceBottom(20)] public bool _debugInputActionCall;
+
+    #endregion
+
     private void Awake()
     {
         MakeBehaviorNodes();

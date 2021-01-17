@@ -40,11 +40,6 @@ public partial class CharacterCore : MonoBehaviour
         RBody.velocity = default;
     }
 
-    private IEnumerator AttackRoutine()
-    {
-        yield return null;
-    }
-
     #endregion
     /***********************************************************************
     *                               Infinite Routines
@@ -79,6 +74,8 @@ public partial class CharacterCore : MonoBehaviour
                     f += deltaTime;
                     yield return null;
                 }
+
+                Debug.Mark(_debugInputActionCall);
             }
             // Zoom Out
             else if (_tpCameraWheelInput < -0.01f)
@@ -100,6 +97,8 @@ public partial class CharacterCore : MonoBehaviour
                     f += deltaTime;
                     yield return null;
                 }
+
+                Debug.Mark(_debugInputActionCall);
             }
 
             yield return wfs;

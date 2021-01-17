@@ -85,6 +85,9 @@ public partial class CharacterCore : MonoBehaviour
 
         /// <summary> 더블점프를 썼는지 여부 </summary>
         public bool doubleJumped;
+
+        /// <summary> 두 번째 공격을 했는지 여부 </summary>
+        public bool secondAttacked;
     }
     [SerializeField]
     private CurrentStateValues _currentStates = new CurrentStateValues();

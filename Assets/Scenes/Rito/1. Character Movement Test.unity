@@ -441,6 +441,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player Character WGS
       objectReference: {fileID: 0}
+    - target: {fileID: 2758616705153223987, guid: 054bb0346d36183418d870c338f14a33,
+        type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5966269940292438162, guid: 054bb0346d36183418d870c338f14a33,
+        type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8721786407805735020, guid: 054bb0346d36183418d870c338f14a33,
+        type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 054bb0346d36183418d870c338f14a33, type: 3}
 --- !u!1 &1530103913

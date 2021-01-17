@@ -15,39 +15,85 @@ public partial class CharacterCore : MonoBehaviour
     *                             Animation Players
     ***********************************************************************/
     #region .
-    
+
     // 1. All Layer
-    private void ResetAnimation() => Anim.Play(AnimationNameSet.none);
-    private void PlayRollAnimation() => Anim.Play(AnimationNameSet.roll);
-    private void PlayBindAnimation() => Anim.Play(AnimationNameSet.bind);
+    private void ResetAnimation()
+    {
+        Anim.Play(AnimationNameSet.none);
+        Debug.Mark(_debugPlayAnimationCall);
+    }
+    private void PlayRollAnimation()
+    {
+        Anim.Play(AnimationNameSet.roll);
+        Debug.Mark(_debugPlayAnimationCall);
+    }
+    private void PlayBindAnimation()
+    {
+        Anim.Play(AnimationNameSet.bind);
+        Debug.Mark(_debugPlayAnimationCall);
+    }
 
     /// <summary> Common : 스턴 / Upper : 애니메이션 없음 </summary>
     private void PlayResetAndStunAnimation()
     {
         Anim.Play(AnimationNameSet.stun, AnimationCommon);
         Anim.Play(AnimationNameSet.none, AnimationUpper);
+        Debug.Mark(_debugPlayAnimationCall);
     }
     /// <summary> Common : 사망 / Upper : 애니메이션 없음 </summary>
     private void PlayResetAndDeathAnimation()
     {
         Anim.Play(AnimationNameSet.die, AnimationCommon);
         Anim.Play(AnimationNameSet.none, AnimationUpper);
+        Debug.Mark(_debugPlayAnimationCall);
     }
 
-    private void PlayIdleAnimation() => Anim.Play(AnimationNameSet.idle);
-    private void PlayMoveAnimation() => Anim.Play(AnimationNameSet.move);
+    private void PlayIdleAnimation()
+    {
+        Anim.Play(AnimationNameSet.idle);
+        Debug.Mark(_debugPlayAnimationCall);
+    }
+    private void PlayMoveAnimation()
+    {
+        Anim.Play(AnimationNameSet.move);
+        Debug.Mark(_debugPlayAnimationCall);
+    }
 
-    private void PlayBattleIdleAnimation() => Anim.Play(AnimationNameSet.battleIdle);
-    private void PlayBattleMoveAnimation() => Anim.Play(AnimationNameSet.battleMove);
+    private void PlayBattleIdleAnimation()
+    {
+        Anim.Play(AnimationNameSet.battleIdle);
+        Debug.Mark(_debugPlayAnimationCall);
+    }
+    private void PlayBattleMoveAnimation()
+    {
+        Anim.Play(AnimationNameSet.battleMove);
+        Debug.Mark(_debugPlayAnimationCall);
+    }
 
     // 2. Common Layer
-    private void PlayCommonResetAnimation() => Anim.Play(AnimationNameSet.none, AnimationCommon);
-    private void PlayCommonIdleAnimation() => Anim.Play(AnimationNameSet.idle, AnimationCommon);
-    private void PlayCommonMoveAnimation() => Anim.Play(AnimationNameSet.move, AnimationCommon);
+    private void PlayCommonResetAnimation()
+    {
+        Anim.Play(AnimationNameSet.none, AnimationCommon);
+        Debug.Mark(_debugPlayAnimationCall);
+    }
+    private void PlayCommonIdleAnimation()
+    {
+        Anim.Play(AnimationNameSet.idle, AnimationCommon);
+        Debug.Mark(_debugPlayAnimationCall);
+    }
+    private void PlayCommonMoveAnimation()
+    {
+        Anim.Play(AnimationNameSet.move, AnimationCommon);
+        Debug.Mark(_debugPlayAnimationCall);
+    }
 
     // 3. Upper Layer
     /// <summary> 상체 애니메이션 초기화 </summary>
-    private void ResetUpperAnimation() => Anim.Play(AnimationNameSet.none, AnimationUpper);
+    private void ResetUpperAnimation()
+    {
+        Anim.Play(AnimationNameSet.none, AnimationUpper);
+        Debug.Mark(_debugPlayAnimationCall);
+    }
 
     #endregion
     /***********************************************************************
@@ -82,6 +128,8 @@ public partial class CharacterCore : MonoBehaviour
             if (currentCooldown < 0f)
                 currentCooldown = 0f;
         }
+
+        Debug.Mark(_debugUpdateActionCall);
     }
 
     /// <summary> 땅으로부터의 거리 체크 </summary>
@@ -106,6 +154,8 @@ public partial class CharacterCore : MonoBehaviour
         {
             Current.doubleJumped = false;
         }
+
+        Debug.Mark(_debugUpdateActionCall);
     }
 
     #endregion
@@ -118,11 +168,15 @@ public partial class CharacterCore : MonoBehaviour
     {
         SetDeadState(true);
         PlayResetAndDeathAnimation();
+
+        Debug.Mark(_debugPlayerActionCall);
     }
     /// <summary> 부활하기 </summary>
     private void Revive()
     {
         SetDeadState(false);
+
+        Debug.Mark(_debugPlayerActionCall);
     }
 
     /// <summary> 캐릭터 모드 변경 </summary>
@@ -136,6 +190,8 @@ public partial class CharacterCore : MonoBehaviour
         {
             SetBehaviorMode(BehaviorMode.None);
         }
+
+        Debug.Mark(_debugPlayerActionCall);
     }
 
     /// <summary> 공격 </summary>
@@ -148,10 +204,14 @@ public partial class CharacterCore : MonoBehaviour
         {
             FirstAttack();
         }
-        else if (Current.firstAttackCooldown < 0.01f && Current.secondAttackChanceDuration > 0f)
+        else if (!Current.secondAttacked
+            && Current.firstAttackCooldown < 0.01f
+            && Current.secondAttackChanceDuration > 0f)
         {
             SecondAttack();
         }
+
+        Debug.Mark(_debugPlayerActionCall);
     }
     private void FirstAttack()
     {
@@ -160,12 +220,18 @@ public partial class CharacterCore : MonoBehaviour
         Current.firstAttackCooldown = Cooldown.firstAttack / Speed.attackSpeed;
         Current.secondAttackChanceDuration =
             (Cooldown.firstAttack + Duration.secondAttackChance) / Speed.attackSpeed;
+        Current.secondAttacked = false;
 
         Anim.Play(AnimationNameSet.upperBattleAttack0, AnimationUpper);
+
+        Debug.Mark(_debugPlayerActionCall);
     }
     private void SecondAttack()
     {
+        Current.secondAttacked = true;
         Anim.Play(AnimationNameSet.upperBattleAttack1, AnimationUpper);
+
+        Debug.Mark(_debugPlayerActionCall);
     }
 
     /// <summary> 키보드 WASD 이동 </summary>
@@ -193,6 +259,8 @@ public partial class CharacterCore : MonoBehaviour
         RBody.velocity = new Vector3(next.x, RBody.velocity.y, next.z);
 
         UpdateMoveDirection(_moveDir);
+
+        Debug.Mark(_debugPlayerActionCall);
     }
 
     /// <summary> 진행 방향으로 구르기 </summary>
@@ -210,6 +278,8 @@ public partial class CharacterCore : MonoBehaviour
         SetRollState(true);
 
         StartCoroutine(RollRoutine());
+
+        Debug.Mark(_debugPlayerActionCall);
     }
 
     /// <summary> 점프하기 </summary>
@@ -231,6 +301,8 @@ public partial class CharacterCore : MonoBehaviour
             RBody.velocity = default;
         }
         RBody.AddForce(Vector3.up * Move.jumpForce, ForceMode.VelocityChange);
+
+        Debug.Mark(_debugPlayerActionCall);
     }
 
     #endregion
@@ -246,6 +318,8 @@ public partial class CharacterCore : MonoBehaviour
         if (Input.GetKeyDown(Key.changeViewToggle))
         {
             ToggleCameraView();
+
+            Debug.Mark(_debugInputActionCall);
         }
     }
 
@@ -254,6 +328,8 @@ public partial class CharacterCore : MonoBehaviour
         if (Input.GetKeyDown(Key.changeBehaviorMode))
         {
             ChangeBehaviorMode();
+
+            Debug.Mark(_debugInputActionCall);
         }
     }
 
@@ -270,6 +346,8 @@ public partial class CharacterCore : MonoBehaviour
             {
                 SetCursorVisibleState(false);
             }
+
+            Debug.Mark(_debugInputActionCall);
         }
         if (Input.GetMouseButtonUp(2))
         {
@@ -279,6 +357,8 @@ public partial class CharacterCore : MonoBehaviour
             {
                 SetCursorVisibleState(true);
             }
+
+            Debug.Mark(_debugInputActionCall);
         }
 
         // 2. Alt 눌러 커서 토글
@@ -286,6 +366,8 @@ public partial class CharacterCore : MonoBehaviour
         {
             State.isCursorVisible = !State.isCursorVisible;
             SetCursorVisibleState(State.isCursorVisible);
+
+            Debug.Mark(_debugInputActionCall);
         }
     }
 
@@ -343,6 +425,7 @@ public partial class CharacterCore : MonoBehaviour
         // 캐릭터 회전 적용
         if (yRotatable && !CharacterIsRolling())
             transform.localEulerAngles += Vector3.up * yRotAdd;
+
     }
 
     /// <summary> TP Cam : 마우스 휠 굴려서 확대/축소 </summary>
@@ -368,7 +451,11 @@ public partial class CharacterCore : MonoBehaviour
         _worldMoveDir = transform.TransformDirection(_moveDir);
 
         // 벽 매미 현상 방지
-        CheckAdjecentToWall(_worldMoveDir);
+        State.isAdjcentToWall =
+            CheckAdjecentToWall(_worldMoveDir, 0.1f) ||
+            CheckAdjecentToWall(_worldMoveDir, 0.5f) ||
+            CheckAdjecentToWall(_worldMoveDir, 0.9f);
+
         if (State.isAdjcentToWall)
         {
             _worldMoveDir = default;
@@ -385,6 +472,9 @@ public partial class CharacterCore : MonoBehaviour
         float walkingMultiplier = State.isWalking ? 0.5f : 1f;
         Anim.SetFloat("Move X", _moveDir.x * walkingMultiplier);
         Anim.SetFloat("Move Z", _moveDir.z * walkingMultiplier);
+
+        if(_moveDir.magnitude > 0.1f)
+            Debug.Mark(_debugInputActionCall);
     }
 
     #endregion
