@@ -6,10 +6,6 @@ using UnityEngine;
 // 날짜 : 2021-01-09 PM 4:47:05
 // 작성자 : Rito
 
-// 설명 : Deubg 클래스를 Conditional("UNITY_EDITOR")로 래핑하여
-// 빌드 후에는 디버그가 실행되지 않게 함
-// 성능 상 많은 이득
-
 /// <summary> 에디터 전용 디버그 래퍼 클래스 </summary>
 public static class Debug
 {
@@ -68,6 +64,25 @@ public static class Debug
         [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0
     )
     {
+        int begin = sourceFilePath.LastIndexOf(@"\");
+        int end = sourceFilePath.LastIndexOf(@".cs");
+        string className = sourceFilePath.Substring(begin + 1, end - begin - 1);
+
+        UnityEngine.Debug.Log($"[Mark] {className}.{memberName}, {sourceLineNumber}");
+    }
+
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    /// <summary>
+    /// 메소드 호출 전파 추적용 메소드 (Conditional)
+    /// </summary>
+    public static void Mark(in bool condition,
+        [System.Runtime.CompilerServices.CallerMemberName] string memberName = "",
+        [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",
+        [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0
+    )
+    {
+        if (!condition) return;
+
         int begin = sourceFilePath.LastIndexOf(@"\");
         int end = sourceFilePath.LastIndexOf(@".cs");
         string className = sourceFilePath.Substring(begin + 1, end - begin - 1);

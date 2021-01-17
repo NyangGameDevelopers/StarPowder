@@ -103,14 +103,16 @@ public partial class CharacterCore : MonoBehaviour
         public KeyCode roll = KeyCode.LeftShift;
         public KeyCode jump = KeyCode.Space;
 
-        [Tooltip("마우스 커서 보이기/감추기 토글"), Space]
+        [Space]
+        [Tooltip("마우스 커서 보이기/감추기 토글")]
         public KeyCode showCursorToggle = KeyCode.LeftAlt;
 
         [Tooltip("1인칭 / 3인칭 카메라 변경 토글")]
-        public KeyCode changeViewToggle = KeyCode.Tab;
+        public KeyCode changeViewToggle = KeyCode.BackQuote;
 
         [Space]
-        public KeyCode changeBehaviorMode = KeyCode.E;
+        [Tooltip("일반모드 / 전투모드 변경")]
+        public KeyCode changeBehaviorMode = KeyCode.Tab;
         public MouseButton attack = MouseButton.Left;
     }
     [SerializeField]
@@ -147,7 +149,7 @@ public partial class CharacterCore : MonoBehaviour
         public float rollDistance = 3f;
 
         [Range(1f, 10f), Tooltip("점프점프")]
-        public float jumpForce = 6f;
+        public float jumpForce = 5.5f;
     }
     [SerializeField]
     private MoveOption _moveOption = new MoveOption();

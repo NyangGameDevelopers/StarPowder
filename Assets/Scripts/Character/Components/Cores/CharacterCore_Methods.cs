@@ -211,23 +211,20 @@ public partial class CharacterCore : MonoBehaviour
 
 
     /// <summary> 이동 방향 코앞에 벽이 있는지 검사 </summary>
-    private void CheckAdjecentToWall(Vector3 worldDIr, out Vector3 wallNormal)
+    private bool CheckAdjecentToWall(in Vector3 worldDIr, in float originHeight)
     {
-        wallNormal = default;
-
         if (worldDIr.magnitude < 0.1f)
         {
-            State.isAdjcentToWall = false;
-            return;
+            return false;
         }
 
-        Vector3 ro = transform.position + Vector3.up * 0.2f;
+        Vector3 ro = transform.position + Vector3.up * originHeight;
         Vector3[] rds = {
             _worldMoveDir,
-            Quaternion.Euler(0f, 20f, 0f) * _worldMoveDir,
-            Quaternion.Euler(0f, 40f, 0f) * _worldMoveDir,
-            Quaternion.Euler(0f, -20f, 0f) * _worldMoveDir,
-            Quaternion.Euler(0f, -40f, 0f) * _worldMoveDir
+            Quaternion.Euler(0f, 18f, 0f) * _worldMoveDir,
+            Quaternion.Euler(0f, 35f, 0f) * _worldMoveDir,
+            Quaternion.Euler(0f, -18f, 0f) * _worldMoveDir,
+            Quaternion.Euler(0f, -35f, 0f) * _worldMoveDir
         };
         float d = 0.4f;
 
@@ -243,14 +240,22 @@ public partial class CharacterCore : MonoBehaviour
 
                 if (dot < 0.05f)
                 {
-                    State.isAdjcentToWall = true;
-                    wallNormal = normal;
-                    return;
+                    return true;
                 }
             }
         }
 
-        State.isAdjcentToWall = false;
+        return false;
+    }
+
+    #endregion
+    /***********************************************************************
+    *                               Calculation Methods
+    ***********************************************************************/
+    #region .
+    private bool InRange(in float variable, in float min, in float max)
+    {
+        return variable >= min && variable <= max;
     }
 
     #endregion

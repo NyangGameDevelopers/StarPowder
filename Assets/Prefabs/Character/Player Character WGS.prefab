@@ -298,6 +298,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0cd56a3d90dc4940b4fe7ea9e0bb32d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _debugPlayAnimationCall: 0
+  _debugUpdateActionCall: 0
+  _debugPlayerActionCall: 0
+  _debugInputActionCall: 0
   _keyOption:
     moveForward: 119
     moveBackward: 115
@@ -307,8 +311,8 @@ MonoBehaviour:
     roll: 304
     jump: 32
     showCursorToggle: 308
-    changeViewToggle: 9
-    changeBehaviorMode: 101
+    changeViewToggle: 96
+    changeBehaviorMode: 9
     attack: 0
   _speedOption:
     attackSpeed: 1
@@ -316,7 +320,7 @@ MonoBehaviour:
     runSpeedMultiplier: 1.5
   _moveOption:
     rollDistance: 3
-    jumpForce: 6
+    jumpForce: 5.5
   _firstPersonCameraOption:
     rotationSpeed: 2
     lookUpDegree: -60
@@ -337,6 +341,7 @@ MonoBehaviour:
     isStunned: 0
     isBinded: 0
     isGrounded: 0
+    isAdjcentToWall: 0
     isRolling: 0
     isMoving: 0
     isWalking: 0
@@ -357,6 +362,7 @@ MonoBehaviour:
     distFromGround: 0
     attackMotionIndex: 0
     doubleJumped: 0
+    secondAttacked: 0
 --- !u!1 &154032867117024718
 GameObject:
   m_ObjectHideFlags: 0
@@ -997,7 +1003,11 @@ Animator:
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
-  m_WarningMessage: 
+  m_WarningMessage: "\nBinding warning: Some generic clip(s) animate transforms that
+    are already bound by a Humanoid avatar. These transforms can only be changed
+    by Humanoid clips.\n\tTransform 'Jaw'\n\tTransform 'Toes_L'\n\tTransform 'Toes_L'\n\tTransform
+    'Toes_R'\n\tTransform 'Jaw'\n\tTransform 'Toes_R'\n\tTransform 'Jaw'\n\tTransform
+    'Toes_L'\n\tTransform 'Toes_R'\n\tFrom animation clip 'RunA_Curve_FrontLeft@loop'"
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
@@ -2368,7 +2378,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4429171839841385397
 Transform:
   m_ObjectHideFlags: 0
