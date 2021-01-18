@@ -63,5 +63,7 @@ public partial class CharacterCore : MonoBehaviour
 
     public GameObject WeaponRigGo { get; private set; }
 
+    // 캐릭터 트랜스폼
+    public Transform CTran { get; private set; }
     #endregion
 }

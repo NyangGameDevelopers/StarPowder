@@ -15,17 +15,34 @@ public partial class CharacterCore : MonoBehaviour
     private IEnumerator RollRoutine()
     {
         Vector3 rollDir = _moveDir;
+        Vector3 localDir;
 
         // WASD 입력 없으면 전방으로 구르기
         if (rollDir.magnitude < 0.1f)
             rollDir = Vector3.forward;
 
+#if MOVE2
+        if (CurrentIsTPCamera())
+        {
+            Anim.SetFloat("Roll Z", 1.0f);
+            localDir = TPCam.Rig.TransformDirection(rollDir);
+            var rot = Quaternion.LookRotation(localDir, Vector3.up).eulerAngles;
+            CTran.localEulerAngles = Vector3.up * rot.y;
+        }
+        else
+        {
+            Anim.SetFloat("Roll X", rollDir.x);
+            Anim.SetFloat("Roll Z", rollDir.z);
+
+            localDir = transform.TransformDirection(rollDir);
+        }
+#else
         // 애니메이션 파라미터 설정
         Anim.SetFloat("Roll X", rollDir.x);
         Anim.SetFloat("Roll Z", rollDir.z);
 
-        Vector3 localDir = transform.TransformDirection(rollDir);
-
+        localDir = transform.TransformDirection(rollDir);
+#endif
         while (State.isRolling)
         {
             float x = Current.rollDuration / Duration.roll;
@@ -40,11 +57,11 @@ public partial class CharacterCore : MonoBehaviour
         RBody.velocity = default;
     }
 
-    #endregion
+#endregion
     /***********************************************************************
     *                               Infinite Routines
     ***********************************************************************/
-    #region .
+#region .
     private IEnumerator CameraZoomRoutine()
     {
         var wfs = new WaitForSeconds(0.005f);
@@ -105,5 +122,5 @@ public partial class CharacterCore : MonoBehaviour
         }
     }
 
-    #endregion
+#endregion
 }

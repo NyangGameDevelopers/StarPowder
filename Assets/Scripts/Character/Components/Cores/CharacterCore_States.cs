@@ -47,9 +47,6 @@ public partial class CharacterCore : MonoBehaviour
         /// <summary> 캐릭터가 공격 모션 중인지 여부 </summary>
         public bool isAttacking;
 
-        /// <summary> 캐릭터 변신중 </summary>
-        public bool isChangingMode;
-
         /// <summary> 현재 커서가 보이는지 여부 </summary>
         public bool isCursorVisible;
 

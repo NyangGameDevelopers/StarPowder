@@ -22,7 +22,8 @@ public partial class CharacterCore : MonoBehaviour
     public bool _debugPlayAnimationCall;
     public bool _debugUpdateActionCall;
     public bool _debugPlayerActionCall;
-    [SpaceBottom(20)] public bool _debugInputActionCall;
+    [SpaceBottom(20)] 
+    public bool _debugInputActionCall;
 
     #endregion
 

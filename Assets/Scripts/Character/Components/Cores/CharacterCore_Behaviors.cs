@@ -53,28 +53,35 @@ public partial class CharacterCore : MonoBehaviour
                     Condition(CharacterIsStunned),
                     Condition(CharacterIsRolling),
 
+                    // Attack
                     Sequence
                     (
-                        Condition(CharacterIsBattleMode),
+                        Condition(CharacterIsOnBattleMode),
                         Condition(CharacterIsGrounded),
                         IfAction(AttackKeyDown, AttackAndPlayAnimation)
                     ),
 
                     Condition(CharacterIsBinded),
 
+                    // Jump
                     Sequence
                     (
-                        //NotCondition(OnTotalAttackCooldown),
                         NotCondition(OnFirstAttackCooldown),
                         IfAction(JumpKeyDown, Jump),
                         Action(ResetUpperAnimation),
                         Action(PlayIdleAnimation)
                     ),
 
-                    IfAction(RollKeyDown, RollWASD),
+                    // Roll
+                    Sequence
+                    (
+                        NotCondition(CharacterIsOnWitchMode),
+                        Condition(RollKeyDown),
+                        Action(RollWASD)
+                    ),
+
                     Action(MoveWASD)
                 ),
-                //IfNotAction(CharacterIsUnableToMove, MoveWASD),
 
                 Selector // Animations
                 (
@@ -82,18 +89,6 @@ public partial class CharacterCore : MonoBehaviour
                     IfAction(CharacterIsStunned, PlayResetAndStunAnimation),
                     IfAction(CharacterIsBinded,  PlayBindAnimation),
                     IfAction(CharacterIsRolling, PlayRollAnimation),
-
-                    Sequence
-                    (
-                        Condition(CharacterIsBattleMode),
-                        IfElseAction
-                        (
-                            CharacterIsMovingOnGround,
-                            PlayBattleMoveAnimation,
-                            PlayBattleIdleAnimation
-                        )
-                    ),
-
                     IfAction(CharacterIsMovingOnGround, PlayMoveAnimation),
                     Action(PlayIdleAnimation)
                 )

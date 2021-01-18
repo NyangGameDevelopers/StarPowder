@@ -51,6 +51,8 @@ public partial class CharacterCore : MonoBehaviour
         // Init Component Values
         RBody.constraints = RigidbodyConstraints.FreezeRotation;
         Anim.applyRootMotion = false;
+
+        CTran = Anim.transform;
     }
 
     private void InitializeValues()
@@ -71,6 +73,45 @@ public partial class CharacterCore : MonoBehaviour
 
     #endregion
     /***********************************************************************
+    *                               Getter Methods
+    ***********************************************************************/
+    #region .
+    /// <summary> 현재 모드에 따라 알맞은 애니메이션 이름 참조 </summary>
+    public string GetAnimation(AnimType type)
+    {
+        // 죽음 : 공통으로 사망 애니메이션
+        if (type.Equals(AnimType.Die))
+            return AnimationName.die;
+
+        bool idle = type.Equals(AnimType.Idle);
+        bool moving = type.Equals(AnimType.Move);
+        bool rolling = type.Equals(AnimType.Roll);
+        bool binded = type.Equals(AnimType.Bind);
+        bool stunned = type.Equals(AnimType.Stun);
+
+        switch(State.behaviorMode)
+        {
+            case BehaviorMode.None when idle:    return AnimationName.idle;
+            case BehaviorMode.None when moving:  return AnimationName.move;
+            case BehaviorMode.None when rolling: return AnimationName.roll;
+            case BehaviorMode.None when binded:  return AnimationName.bind;
+            case BehaviorMode.None when stunned: return AnimationName.stun;
+             
+            case BehaviorMode.Battle when idle:    return AnimationName.battleIdle;
+            case BehaviorMode.Battle when moving:  return AnimationName.battleMove;
+            case BehaviorMode.Battle when rolling: return AnimationName.roll;
+            case BehaviorMode.Battle when binded:  return AnimationName.bind;
+            case BehaviorMode.Battle when stunned: return AnimationName.stun;
+             
+            case BehaviorMode.Witch: return AnimationName.witch;
+
+            default: return AnimationName.none;
+        }
+    }
+
+    #endregion
+
+    /***********************************************************************
     *                            Setter, Changer Methods
     ***********************************************************************/
     #region .
@@ -82,7 +123,6 @@ public partial class CharacterCore : MonoBehaviour
     private void SetMovingState(bool value) => State.isMoving = value;
     private void SetWalkingState(bool value) => State.isWalking = value;
     private void SetRunningState(bool value) => State.isRunning = value;
-    private void SetChangingModeState(bool value) => State.isChangingMode = value;
 
     private void SetBehaviorMode(BehaviorMode mode)
     {
@@ -107,7 +147,7 @@ public partial class CharacterCore : MonoBehaviour
     private void SetCameraView(CameraViewOption view)
     {
         State.currentView = view;
-        bool isFP = view == CameraViewOption.FirstPerson;
+        bool isFP = CurrentIsFPCamera();
 
         FPCam.Cam.gameObject.SetActive(isFP);
         TPCam.Cam.gameObject.SetActive(!isFP);
@@ -116,11 +156,25 @@ public partial class CharacterCore : MonoBehaviour
         {
             _currentCam = FPCam;
             _currentCamOption = FPCamOption;
+#if MOVE2
+            // TP에서 바라보던 방향 보정
+            float tpCamRotY = TPCam.Rig.eulerAngles.y;
+            transform.eulerAngles = Vector3.up * tpCamRotY;
+            CTran.localRotation     = default;
+            TPCam.Rig.localRotation = default;
+#endif
         }
         else
         {
             _currentCam = TPCam;
             _currentCamOption = TPCamOption;
+#if MOVE2
+            // FP에서 바라보던 방향 보정
+            float rotY = transform.eulerAngles.y;
+            transform.rotation = default;
+            CTran.eulerAngles     = Vector3.up * rotY;
+            TPCam.Rig.eulerAngles = Vector3.up * rotY;
+#endif
         }
     }
 
@@ -137,14 +191,14 @@ public partial class CharacterCore : MonoBehaviour
         }
     }
 
-    #endregion
+#endregion
     /***********************************************************************
     *                            Toggle, Update Methods
     ***********************************************************************/
-    #region .
+#region .
     private void ToggleCameraView()
     {
-        SetCameraView(State.currentView == CameraViewOption.FirstPerson ?
+        SetCameraView(CurrentIsFPCamera() ?
             CameraViewOption.ThirdPerson : CameraViewOption.FirstPerson);
     }
 
@@ -174,11 +228,11 @@ public partial class CharacterCore : MonoBehaviour
         bool Minus(in float value) => (value < -0.1f);
     }
 
-    #endregion
+#endregion
     /***********************************************************************
     *                             Finder Methods
     ***********************************************************************/
-    #region .
+#region .
     /// <summary> Active False인 자식도 다 뒤져서 컴포넌트 찾아오기 </summary>
     private T GetComponentInAllChildren<T>() where T : Component
     {
@@ -203,28 +257,28 @@ public partial class CharacterCore : MonoBehaviour
         }
     }
 
-    #endregion
+#endregion
     /***********************************************************************
     *                               Checker Methods
     ***********************************************************************/
-    #region .
+#region .
 
 
     /// <summary> 이동 방향 코앞에 벽이 있는지 검사 </summary>
-    private bool CheckAdjecentToWall(in Vector3 worldDIr, in float originHeight)
+    private bool CheckAdjecentToWall(in Vector3 dir, in float originHeight)
     {
-        if (worldDIr.magnitude < 0.1f)
+        if (dir.magnitude < 0.1f)
         {
             return false;
         }
 
         Vector3 ro = transform.position + Vector3.up * originHeight;
         Vector3[] rds = {
-            _worldMoveDir,
-            Quaternion.Euler(0f, 18f, 0f) * _worldMoveDir,
-            Quaternion.Euler(0f, 35f, 0f) * _worldMoveDir,
-            Quaternion.Euler(0f, -18f, 0f) * _worldMoveDir,
-            Quaternion.Euler(0f, -35f, 0f) * _worldMoveDir
+            dir,
+            Quaternion.Euler(0f, 18f, 0f) * dir,
+            Quaternion.Euler(0f, 35f, 0f) * dir,
+            Quaternion.Euler(0f, -18f, 0f) * dir,
+            Quaternion.Euler(0f, -35f, 0f) * dir
         };
         float d = 0.4f;
 
@@ -248,15 +302,15 @@ public partial class CharacterCore : MonoBehaviour
         return false;
     }
 
-    #endregion
+#endregion
     /***********************************************************************
     *                               Calculation Methods
     ***********************************************************************/
-    #region .
+#region .
     private bool InRange(in float variable, in float min, in float max)
     {
         return variable >= min && variable <= max;
     }
 
-    #endregion
+#endregion
 }

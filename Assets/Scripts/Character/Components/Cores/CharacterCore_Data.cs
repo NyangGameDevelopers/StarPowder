@@ -17,7 +17,7 @@ public partial class CharacterCore : MonoBehaviour
     public MoveOption Move => _moveOption;
     public SpecialSkillOption Skill => _skillOption;
 
-    public AnimationNameSet_ AnimationNameSet => _animationNameSet;
+    public AnimationNameSet_ AnimationName => _animationNameSet;
 
     public FirstPersonCameraOption FPCamOption => _firstPersonCameraOption;
     public ThirdPersonCameraOption TPCamOption => _thirdPersonCameraOption;
@@ -63,12 +63,12 @@ public partial class CharacterCore : MonoBehaviour
     [Serializable]
     public class AnimationNameSet_
     {
+        // 공통
         public string none = "NONE";
         public string roll = "ROLL";
         public string bind = "BIND";
         public string stun = "STUN";
         public string die  = "DIE";
-        public string HoldDie = "HOLD_DIE";
 
         // 평시
         public string idle = "IDLE";
@@ -77,6 +77,12 @@ public partial class CharacterCore : MonoBehaviour
         // 근접 무기
         public string battleIdle = "BATTLE_IDLE";
         public string battleMove = "BATTLE_MOVE";
+
+        // 마녀
+        public string witch = "WITCH";
+
+        // 감정표현
+        public string emotion0 = "EMOTION_CLAP";
 
         //====================== Upper 레이어(상체) 애니메이션 ===================
         public string upperBattleAttack0 = "BATTLE_ATTACK_0";

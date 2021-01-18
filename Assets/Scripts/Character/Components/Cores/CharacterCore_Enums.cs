@@ -41,5 +41,18 @@ public partial class CharacterCore : MonoBehaviour
     {
         None,
         Battle,
+        Witch,
+    }
+
+    public enum AnimType
+    {
+        None,
+        Idle,
+        Move,
+        Roll,
+        Bind,
+        Stun,
+        Die,
+        Emotion,
     }
 }

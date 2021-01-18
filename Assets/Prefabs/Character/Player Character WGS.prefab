@@ -347,7 +347,6 @@ MonoBehaviour:
     isWalking: 0
     isRunning: 0
     isAttacking: 0
-    isChangingMode: 0
     isCursorVisible: 0
     currentMoveDirection: 0
     currentView: 1
@@ -1590,7 +1589,7 @@ GameObject:
   - component: {fileID: 6401731664569807035}
   - component: {fileID: 9182283110455858307}
   - component: {fileID: 2145831745933012336}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: Mesh_greatsword
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3102,7 +3101,8 @@ GameObject:
   m_Component:
   - component: {fileID: 8245252302877228798}
   - component: {fileID: 5966269940292438165}
-  m_Layer: 9
+  - component: {fileID: 174661406}
+  m_Layer: 0
   m_Name: Prop_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3137,6 +3137,55 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c59ba56ffdeb21a41be42919f6b087f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &174661406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5966269940292438162}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbcae18058121ac4c84039eebae777f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _afterImageMaterial: {fileID: 2100000, guid: beec343ae6dc52849a7759822010337c, type: 2}
+  _afterImageGradient:
+    serializedVersion: 2
+    key0: {r: 0.7, g: 0, b: 1, a: 1}
+    key1: {r: 0.3, g: 1, b: 1, a: 1}
+    key2: {r: 1, g: 1, b: 0, a: 0}
+    key3: {r: 0.3, g: 1, b: 1, a: 0}
+    key4: {r: 0.7, g: 0, b: 1, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 16384
+    ctime2: 32768
+    ctime3: 49151
+    ctime4: 65535
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_NumColorKeys: 5
+    m_NumAlphaKeys: 2
+  _colorUpdateSpeed: 1
+  _bakingCycle: 0.1
+  _data:
+    duration: 1
+    shaderColorName: _Color
+    shaderAlphaName: _Alpha
+  _containChildrenMeshes: 1
 --- !u!1 &6000435379571315891
 GameObject:
   m_ObjectHideFlags: 0
@@ -4645,7 +4694,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7312860945702471442}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: Prop_03
   m_TagString: Untagged
   m_Icon: {fileID: 0}

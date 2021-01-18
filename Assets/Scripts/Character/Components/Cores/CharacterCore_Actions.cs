@@ -19,71 +19,60 @@ public partial class CharacterCore : MonoBehaviour
     // 1. All Layer
     private void ResetAnimation()
     {
-        Anim.Play(AnimationNameSet.none);
+        Anim.Play(GetAnimation(AnimType.None));
         Debug.Mark(_debugPlayAnimationCall);
     }
     private void PlayRollAnimation()
     {
-        Anim.Play(AnimationNameSet.roll);
+        Anim.Play(GetAnimation(AnimType.Roll));
         Debug.Mark(_debugPlayAnimationCall);
     }
     private void PlayBindAnimation()
     {
-        Anim.Play(AnimationNameSet.bind);
+        Anim.Play(GetAnimation(AnimType.Bind));
         Debug.Mark(_debugPlayAnimationCall);
     }
 
     /// <summary> Common : 스턴 / Upper : 애니메이션 없음 </summary>
     private void PlayResetAndStunAnimation()
     {
-        Anim.Play(AnimationNameSet.stun, AnimationCommon);
-        Anim.Play(AnimationNameSet.none, AnimationUpper);
+        Anim.Play(GetAnimation(AnimType.Stun), AnimationCommon);
+        Anim.Play(AnimationName.none, AnimationUpper);
         Debug.Mark(_debugPlayAnimationCall);
     }
     /// <summary> Common : 사망 / Upper : 애니메이션 없음 </summary>
     private void PlayResetAndDeathAnimation()
     {
-        Anim.Play(AnimationNameSet.die, AnimationCommon);
-        Anim.Play(AnimationNameSet.none, AnimationUpper);
+        Anim.Play(GetAnimation(AnimType.Die), AnimationCommon);
+        Anim.Play(AnimationName.none, AnimationUpper);
         Debug.Mark(_debugPlayAnimationCall);
     }
 
     private void PlayIdleAnimation()
     {
-        Anim.Play(AnimationNameSet.idle);
+        Anim.Play(GetAnimation(AnimType.Idle));
         Debug.Mark(_debugPlayAnimationCall);
     }
     private void PlayMoveAnimation()
     {
-        Anim.Play(AnimationNameSet.move);
-        Debug.Mark(_debugPlayAnimationCall);
-    }
-
-    private void PlayBattleIdleAnimation()
-    {
-        Anim.Play(AnimationNameSet.battleIdle);
-        Debug.Mark(_debugPlayAnimationCall);
-    }
-    private void PlayBattleMoveAnimation()
-    {
-        Anim.Play(AnimationNameSet.battleMove);
+        Anim.Play(GetAnimation(AnimType.Move));
         Debug.Mark(_debugPlayAnimationCall);
     }
 
     // 2. Common Layer
     private void PlayCommonResetAnimation()
     {
-        Anim.Play(AnimationNameSet.none, AnimationCommon);
+        Anim.Play(GetAnimation(AnimType.None), AnimationCommon);
         Debug.Mark(_debugPlayAnimationCall);
     }
     private void PlayCommonIdleAnimation()
     {
-        Anim.Play(AnimationNameSet.idle, AnimationCommon);
+        Anim.Play(GetAnimation(AnimType.Idle), AnimationCommon);
         Debug.Mark(_debugPlayAnimationCall);
     }
     private void PlayCommonMoveAnimation()
     {
-        Anim.Play(AnimationNameSet.move, AnimationCommon);
+        Anim.Play(GetAnimation(AnimType.Move), AnimationCommon);
         Debug.Mark(_debugPlayAnimationCall);
     }
 
@@ -91,7 +80,7 @@ public partial class CharacterCore : MonoBehaviour
     /// <summary> 상체 애니메이션 초기화 </summary>
     private void ResetUpperAnimation()
     {
-        Anim.Play(AnimationNameSet.none, AnimationUpper);
+        Anim.Play(GetAnimation(AnimType.None), AnimationUpper);
         Debug.Mark(_debugPlayAnimationCall);
     }
 
@@ -182,13 +171,11 @@ public partial class CharacterCore : MonoBehaviour
     /// <summary> 캐릭터 모드 변경 </summary>
     private void ChangeBehaviorMode()
     {
-        if (State.behaviorMode.Equals(BehaviorMode.None))
+        switch (State.behaviorMode)
         {
-            SetBehaviorMode(BehaviorMode.Battle);
-        }
-        else if (State.behaviorMode.Equals(BehaviorMode.Battle))
-        {
-            SetBehaviorMode(BehaviorMode.None);
+            case BehaviorMode.None: SetBehaviorMode(BehaviorMode.Battle); break;
+            case BehaviorMode.Battle:SetBehaviorMode(BehaviorMode.Witch); break;
+            case BehaviorMode.Witch:SetBehaviorMode(BehaviorMode.None); break;
         }
 
         Debug.Mark(_debugPlayerActionCall);
@@ -222,14 +209,14 @@ public partial class CharacterCore : MonoBehaviour
             (Cooldown.firstAttack + Duration.secondAttackChance) / Speed.attackSpeed;
         Current.secondAttacked = false;
 
-        Anim.Play(AnimationNameSet.upperBattleAttack0, AnimationUpper);
+        Anim.Play(AnimationName.upperBattleAttack0, AnimationUpper);
 
         Debug.Mark(_debugPlayerActionCall);
     }
     private void SecondAttack()
     {
         Current.secondAttacked = true;
-        Anim.Play(AnimationNameSet.upperBattleAttack1, AnimationUpper);
+        Anim.Play(AnimationName.upperBattleAttack1, AnimationUpper);
 
         Debug.Mark(_debugPlayerActionCall);
     }
@@ -253,12 +240,26 @@ public partial class CharacterCore : MonoBehaviour
         }
 
         RBody.useGravity = true;
-
-        Vector3 next = _worldMoveDir * Speed.moveSpeed * (State.isRunning ? Speed.runSpeedMultiplier : 1f);
+        Vector3 next = _worldMoveDir * Speed.moveSpeed * 
+            (State.isRunning ? Speed.runSpeedMultiplier : 1f);
 
         RBody.velocity = new Vector3(next.x, RBody.velocity.y, next.z);
-
         UpdateMoveDirection(_moveDir);
+
+        // 캐릭터 회전
+#if MOVE2
+        if (CurrentIsTPCamera())
+        {
+            Vector3 dir = TPCam.Rig.TransformDirection(_moveDir);
+            float currentY = CTran.localEulerAngles.y;
+            float nextY = Quaternion.LookRotation(dir, Vector3.up).eulerAngles.y;
+
+            if (nextY - currentY > 180f) nextY -= 360f;
+            else if (currentY - nextY > 180f) nextY += 360f;
+
+            CTran.eulerAngles = Vector3.up * Mathf.Lerp(currentY, nextY, 0.05f);
+        }
+#endif
 
         Debug.Mark(_debugPlayerActionCall);
     }
@@ -410,14 +411,20 @@ public partial class CharacterCore : MonoBehaviour
         bool xRotatable = 
             _currentCamOption.lookUpDegree < xRotNext &&
             _currentCamOption.lookDownDegree > xRotNext;
-        bool yRotatable = !CharacterIsDead() && !CharacterIsStunned();// && !CharacterIsBinded();
+
+        bool yRotatable =
+#if MOVE2
+        CurrentIsFPCamera();
+#else
+        !CharacterIsDead() && !CharacterIsStunned();
+#endif
 
         Vector3 nextRot = new Vector3
-            (
-                xRotatable ? xRotNext : xRotPrev,
-                !yRotatable ? yRotNext : Mathf.SmoothDamp(yRotPrev, yRotPrev > 180f ? 360f : 0f, ref cur, 0.1f),
-                0f
-            );
+        (
+            xRotatable ? xRotNext : xRotPrev,
+            !yRotatable ? yRotNext : Mathf.SmoothDamp(yRotPrev, yRotPrev > 180f ? 360f : 0f, ref cur, 0.1f),
+            0f
+        );
 
         // Rig 회전 적용
         _currentCam.Rig.localEulerAngles = nextRot;
@@ -448,13 +455,30 @@ public partial class CharacterCore : MonoBehaviour
         if (Input.GetKey(Key.moveRight)) _moveDir += Vector3.right;
 
         _moveDir.Normalize();
+        Vector3 checkDir;
+
+#if MOVE2
+        if (CurrentIsTPCamera())
+        {
+            _worldMoveDir = TPCam.Rig.TransformDirection(_moveDir);
+            checkDir = CTran.forward;
+        }
+        else
+        {
+            _worldMoveDir = transform.TransformDirection(_moveDir);
+            checkDir = _worldMoveDir;
+        }
+#else
         _worldMoveDir = transform.TransformDirection(_moveDir);
+        checkDir = _worldMoveDir;
+#endif
+
 
         // 벽 매미 현상 방지
         State.isAdjcentToWall =
-            CheckAdjecentToWall(_worldMoveDir, 0.1f) ||
-            CheckAdjecentToWall(_worldMoveDir, 0.5f) ||
-            CheckAdjecentToWall(_worldMoveDir, 0.9f);
+            CheckAdjecentToWall(checkDir, 0.1f) ||
+            CheckAdjecentToWall(checkDir, 0.5f) ||
+            CheckAdjecentToWall(checkDir, 0.9f);
 
         if (State.isAdjcentToWall)
         {
@@ -469,13 +493,18 @@ public partial class CharacterCore : MonoBehaviour
         SetRunningState(moving && isRunningKeyDown);
 
         // 애니메이션 파라미터 설정
-        float walkingMultiplier = State.isWalking ? 0.5f : 1f;
-        Anim.SetFloat("Move X", _moveDir.x * walkingMultiplier);
-        Anim.SetFloat("Move Z", _moveDir.z * walkingMultiplier);
+        float mul = State.isWalking ? 0.5f : 1f;
+        animSpeedX = Mathf.Lerp(animSpeedX, _moveDir.x * mul, 0.05f);
+        animSpeedZ = Mathf.Lerp(animSpeedZ, _moveDir.z * mul, 0.05f);
 
-        if(_moveDir.magnitude > 0.1f)
+        Anim.SetFloat("Move X", animSpeedX);
+        Anim.SetFloat("Move Z", animSpeedZ);
+
+        if (_moveDir.magnitude > 0.1f)
             Debug.Mark(_debugInputActionCall);
     }
+    private float animSpeedX = 0f;
+    private float animSpeedZ = 0f;
 
-    #endregion
+#endregion
 }

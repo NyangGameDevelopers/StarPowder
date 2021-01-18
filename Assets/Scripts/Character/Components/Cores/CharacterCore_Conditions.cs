@@ -38,9 +38,12 @@ public partial class CharacterCore : MonoBehaviour
     private bool AttackKeyDown() => Input.GetMouseButtonDown((int)Key.attack);
 
 
-    private bool CharacterIsBattleMode() => 
-        !State.isChangingMode &&
-        State.behaviorMode.Equals(BehaviorMode.Battle);
+    private bool CharacterIsOnBattleMode() => State.behaviorMode.Equals(BehaviorMode.Battle);
+    private bool CharacterIsOnWitchMode() => State.behaviorMode.Equals(BehaviorMode.Witch);
+
+
+    private bool CurrentIsFPCamera() => State.currentView == CameraViewOption.FirstPerson;
+    private bool CurrentIsTPCamera() => State.currentView == CameraViewOption.ThirdPerson;
 
     #endregion
 }
