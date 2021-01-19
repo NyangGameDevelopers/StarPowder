@@ -15,17 +15,34 @@ public partial class CharacterCore : MonoBehaviour
     private IEnumerator RollRoutine()
     {
         Vector3 rollDir = _moveDir;
+        Vector3 localDir;
 
         // WASD 입력 없으면 전방으로 구르기
         if (rollDir.magnitude < 0.1f)
             rollDir = Vector3.forward;
 
+#if !OLDCAM
+        if (CurrentIsTPCamera())
+        {
+            Anim.SetFloat("Roll Z", 1.0f);
+            localDir = TPCam.Rig.TransformDirection(rollDir);
+            var rot = Quaternion.LookRotation(localDir, Vector3.up).eulerAngles;
+            Walker.localEulerAngles = Vector3.up * rot.y;
+        }
+        else
+        {
+            Anim.SetFloat("Roll X", rollDir.x);
+            Anim.SetFloat("Roll Z", rollDir.z);
+
+            localDir = Walker.TransformDirection(rollDir);
+        }
+#else
         // 애니메이션 파라미터 설정
         Anim.SetFloat("Roll X", rollDir.x);
         Anim.SetFloat("Roll Z", rollDir.z);
 
-        Vector3 localDir = transform.TransformDirection(rollDir);
-
+        localDir = Walker.TransformDirection(rollDir);
+#endif
         while (State.isRolling)
         {
             float x = Current.rollDuration / Duration.roll;
@@ -37,14 +54,35 @@ public partial class CharacterCore : MonoBehaviour
 
             yield return null;
         }
-        RBody.velocity = default;
+        RBody.velocity = new Vector3(0f, RBody.velocity.y, 0f);
     }
 
-    #endregion
+    /// <summary> 현재 진행 중인 캐스팅 </summary>
+    private Coroutine _castRoutine = null;
+    /// <summary> 캐스팅 후 동작 수행 - duration : 캐스팅 소요 시간 </summary>
+    private IEnumerator CastActionRoutine(float duration, Action action)
+    {
+        // 캐스트 시간 넣고
+        SetCastDuration(duration);
+
+        // 캐스팅..
+        while (Current.castDuration > 0f)
+        {
+            Current.castDuration -= Time.deltaTime;
+
+            yield return null;
+        }
+
+        // 캐스팅 성공 시 동작 수행
+        SetCastDuration(0f);
+        action();
+    }
+
+#endregion
     /***********************************************************************
     *                               Infinite Routines
     ***********************************************************************/
-    #region .
+#region .
     private IEnumerator CameraZoomRoutine()
     {
         var wfs = new WaitForSeconds(0.005f);
@@ -105,5 +143,5 @@ public partial class CharacterCore : MonoBehaviour
         }
     }
 
-    #endregion
+#endregion
 }

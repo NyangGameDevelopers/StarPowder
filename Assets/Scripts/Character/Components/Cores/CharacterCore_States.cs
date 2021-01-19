@@ -47,17 +47,8 @@ public partial class CharacterCore : MonoBehaviour
         /// <summary> 캐릭터가 공격 모션 중인지 여부 </summary>
         public bool isAttacking;
 
-        /// <summary> 캐릭터 변신중 </summary>
-        public bool isChangingMode;
-
         /// <summary> 현재 커서가 보이는지 여부 </summary>
         public bool isCursorVisible;
-
-        /// <summary> 현재 캐릭터 이동 방향 </summary>
-        public MoveDirection currentMoveDirection = MoveDirection.None;
-
-        /// <summary> 현재 선택된 카메라 뷰 </summary>
-        public CameraViewOption currentView = CameraViewOption.ThirdPerson;
     }
     [SerializeField]
     public CharacterState _state = new CharacterState();
@@ -72,6 +63,7 @@ public partial class CharacterCore : MonoBehaviour
         public float firstAttackCooldown;
 
         // Durations : 잔여 진행(지속) 시간
+        public float castDuration; // 시전 지속시간
         public float rollDuration;
         public float stunDuration;
         public float bindDuration;
@@ -88,6 +80,15 @@ public partial class CharacterCore : MonoBehaviour
 
         /// <summary> 두 번째 공격을 했는지 여부 </summary>
         public bool secondAttacked;
+
+        /// <summary> 현재 캐릭터 이동 방향 </summary>
+        public MoveDirection moveDirection = MoveDirection.None;
+
+        /// <summary> 현재 선택된 카메라 뷰 </summary>
+        public CameraViewOption cameraView = CameraViewOption.ThirdPerson;
+
+        /// <summary> 현재 등록된 이동수단 </summary>
+        public Vehicle vehicle;
     }
     [SerializeField]
     private CurrentStateValues _currentStates = new CurrentStateValues();

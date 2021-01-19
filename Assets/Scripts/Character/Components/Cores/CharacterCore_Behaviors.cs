@@ -33,26 +33,66 @@ public partial class CharacterCore : MonoBehaviour
                 Action(CheckDistanceFromGround),
 
                 // Input Actions
-                Action(Input_ChangeCamView),
+                 // 탑승 모드에서는 3인칭 뷰만 지원
+                IfNotAction(CharacterIsOnVehicleMode, Input_ChangeCamView),
                 Action(Input_SetCursorVisibleState),
                 Action(Input_RotatePlayer),
                 Action(Input_CameraZoom),
                 Action(Input_CalculateMoveDirection),
 
-                Sequence // 무기 교체
+                Sequence // 행동 모드 변경 : 일반 <-> 전투 <-> 마녀
                 (
                     NotCondition(CharacterIsDead),
                     NotCondition(CharacterIsStunned),
                     NotCondition(OnTotalAttackCooldown),
+                    NotCondition(CharacterIsOnVehicleMode),
                     Action(Input_ChangeBehaviorMode)
                 ),
 
                 Selector // Actions
                 (
+
+                    Sequence // 캐스팅 도중 
+                    (
+                        Condition(CharacterIsCasting),
+
+                        Sequence
+                        (
+                            Selector // 이런 액션을 취하면
+                            (
+                                Condition(MoveKeyDown),
+                                Condition(JumpKeyDown),
+                                Condition(AttackKeyDown),
+                                Condition(RollKeyDown),
+                                
+                                Condition(CharacterIsDead),
+                                Condition(CharacterIsStunned)
+                            ),
+                            Action(CancelCasting) // 캐스팅 취소
+                        )
+                    ),
+
                     Condition(CharacterIsDead),
                     Condition(CharacterIsStunned),
                     Condition(CharacterIsRolling),
 
+                    // 탑승 키 누르면 탑승
+                    Sequence
+                    (
+                        NotCondition(CharacterIsUnableToMove),
+                        NotCondition(CharacterIsJumping),
+                        Condition(() => Input.GetKeyDown(Key.rideOnVehicle)),
+                        Action(ToggleVehicleState)
+                    ),
+
+                    // 탑승하면 얌전히 이동만
+                    Sequence
+                    (
+                        Condition(CharacterIsOnVehicleMode),
+                        Action(MoveWASD)
+                    ),
+
+                    // Attack
                     Sequence
                     (
                         Condition(CharacterIsBattleMode),
@@ -62,19 +102,25 @@ public partial class CharacterCore : MonoBehaviour
 
                     Condition(CharacterIsBinded),
 
+                    // Jump
                     Sequence
                     (
-                        //NotCondition(OnTotalAttackCooldown),
                         NotCondition(OnFirstAttackCooldown),
                         IfAction(JumpKeyDown, Jump),
                         Action(ResetUpperAnimation),
                         Action(PlayIdleAnimation)
                     ),
 
-                    IfAction(RollKeyDown, RollWASD),
+                    // Roll
+                    Sequence
+                    (
+                        NotCondition(CharacterIsWitchMode),
+                        Condition(RollKeyDown),
+                        Action(RollWASD)
+                    ),
+
                     Action(MoveWASD)
                 ),
-                //IfNotAction(CharacterIsUnableToMove, MoveWASD),
 
                 Selector // Animations
                 (
@@ -82,18 +128,6 @@ public partial class CharacterCore : MonoBehaviour
                     IfAction(CharacterIsStunned, PlayResetAndStunAnimation),
                     IfAction(CharacterIsBinded,  PlayBindAnimation),
                     IfAction(CharacterIsRolling, PlayRollAnimation),
-
-                    Sequence
-                    (
-                        Condition(CharacterIsBattleMode),
-                        IfElseAction
-                        (
-                            CharacterIsMovingOnGround,
-                            PlayBattleMoveAnimation,
-                            PlayBattleIdleAnimation
-                        )
-                    ),
-
                     IfAction(CharacterIsMovingOnGround, PlayMoveAnimation),
                     Action(PlayIdleAnimation)
                 )
