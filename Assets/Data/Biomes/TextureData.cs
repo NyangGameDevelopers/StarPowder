@@ -5,7 +5,7 @@ using System.Linq;
 [CreateAssetMenu()]
 public class TextureData : UpdatableData {
 
-	const int textureSize = 512;
+	const int textureSize = 32;
 	const TextureFormat textureFormat = TextureFormat.RGB565;
 
 	public Layer[] layers;
