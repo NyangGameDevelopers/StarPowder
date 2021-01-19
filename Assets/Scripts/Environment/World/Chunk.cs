@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Chunk 
+public class Chunk : MonoBehaviour
 {
     /* Public Field */
     public ChunkCoord coord;
@@ -29,8 +29,10 @@ public class Chunk
     
     /* Private Field */
     GameObject chunkObject;
-	MeshRenderer meshRenderer;
-	MeshFilter meshFilter;
+    GameObject originalChunk;
+	//MeshRenderer meshRenderer;
+	//MeshFilter meshFilter;
+    //MeshCollider meshCollider;
     World world;
 	List<Vector3> vertices = new List<Vector3> ();
 	List<int> triangles = new List<int> ();
@@ -39,12 +41,13 @@ public class Chunk
     bool _isActive;
     
     /* Constructor */
-    public Chunk (ChunkCoord _coord, World _world, bool generateOnLoad) 
+    public Chunk (GameObject _originalChunk, ChunkCoord _coord, World _world, bool generateOnLoad) 
     {
-        coord = _coord;
-        world = _world;
-        isActive = true;
-
+        originalChunk = _originalChunk;
+        coord         = _coord;
+        world         = _world;
+        isActive      = true;
+        
         if (generateOnLoad)
             Init();
     }
@@ -52,11 +55,21 @@ public class Chunk
     /* Method */
     public void Init () 
     {
-        chunkObject  = new GameObject();
-        meshFilter   = chunkObject.AddComponent<MeshFilter>();
-        meshRenderer = chunkObject.AddComponent<MeshRenderer>();
+        // chunkObject  = new GameObject();
+        // meshFilter   = chunkObject.AddComponent<MeshFilter>();
+        // meshRenderer = chunkObject.AddComponent<MeshRenderer>();
+        // meshCollider = chunkObject.AddComponent<MeshCollider>();
 
-        meshRenderer.material = world.material;
+        // meshRenderer.material = world.material;
+        // meshCollider.cookingOptions = (
+        //     MeshColliderCookingOptions.CookForFasterSimulation | 
+        //     MeshColliderCookingOptions.EnableMeshCleaning | 
+        //     MeshColliderCookingOptions.UseFastMidphase | 
+        //     MeshColliderCookingOptions.WeldColocatedVertices
+        // );
+        chunkObject = Instantiate(originalChunk);
+        chunkObject.SetActive(true);
+
         chunkObject.transform.SetParent(world.transform);
         chunkObject.transform.position = new Vector3(coord.x * VoxelData.ChunkWidth, 0f, coord.z * VoxelData.ChunkWidth);
         chunkObject.name = "Chunk " + coord.x + ", " + coord.z;
@@ -67,7 +80,6 @@ public class Chunk
 
 	void PopulateVoxelMap () 
     {
-		
 		for (int y = 0; y < VoxelData.ChunkHeight; y++) {
 			for (int x = 0; x < VoxelData.ChunkWidth; x++) {
 				for (int z = 0; z < VoxelData.ChunkWidth; z++) {
@@ -197,9 +209,10 @@ public class Chunk
 		mesh.triangles = triangles.ToArray ();
 		mesh.uv = uvs.ToArray ();
 
-		mesh.RecalculateNormals ();
+		mesh.RecalculateNormals();
 
-		meshFilter.mesh = mesh;
+        chunkObject.GetComponent<MeshCollider>().sharedMesh = mesh;
+		chunkObject.GetComponent<MeshFilter>().mesh = mesh;
 	}
 
     void AddTexture (int textureID) 

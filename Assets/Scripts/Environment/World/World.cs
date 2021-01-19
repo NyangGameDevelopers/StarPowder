@@ -7,7 +7,6 @@ public class World : MonoBehaviour
     /* Public Field */
     public int seed;
     public BiomeBase biome;
-
     public Transform player;
     public Vector3 spawnPosition;
 
@@ -15,6 +14,7 @@ public class World : MonoBehaviour
     public BlockType[] blocktypes;
     public ChunkCoord playerChunkCoord;
     public GameObject debugScreen;
+    public GameObject originalChunk;
 
     /* Private Field */
     Chunk[,] chunks = new Chunk[VoxelData.WorldSizeInChunks, VoxelData.WorldSizeInChunks];
@@ -54,7 +54,7 @@ public class World : MonoBehaviour
     {
         for (int x = (VoxelData.WorldSizeInChunks / 2) - VoxelData.ViewDistanceInChunks; x < (VoxelData.WorldSizeInChunks / 2) + VoxelData.ViewDistanceInChunks; x++) {
             for (int z = (VoxelData.WorldSizeInChunks / 2) - VoxelData.ViewDistanceInChunks; z < (VoxelData.WorldSizeInChunks / 2) + VoxelData.ViewDistanceInChunks; z++) {
-                chunks[x, z] = new Chunk(new ChunkCoord(x, z), this, true);
+                chunks[x, z] = new Chunk(originalChunk, new ChunkCoord(x, z), this, true);
                 activeChunks.Add(new ChunkCoord(x, z));
             }
         }
@@ -101,7 +101,7 @@ public class World : MonoBehaviour
             for (int z = coord.z - VoxelData.ViewDistanceInChunks; z < coord.z + VoxelData.ViewDistanceInChunks; z++) {
                 if (IsChunkInWorld (new ChunkCoord (x, z))) {
                     if (chunks[x, z] == null) {
-                        chunks[x, z] = new Chunk(new ChunkCoord(x, z), this, false);
+                        chunks[x, z] = new Chunk(originalChunk, new ChunkCoord(x, z), this, false);
                         chunksToCreate.Add(new ChunkCoord(x, z));
                     }  
                     else if (!chunks[x, z].isActive) {
@@ -144,7 +144,7 @@ public class World : MonoBehaviour
             return 1;
 
 
-        int terrainHeight = Mathf.FloorToInt(biome.terrainHeight * Noise.Get2DPerlin(new Vector2(pos.x, pos.z), 0, biome.terrainScale)) + biome.solidGroundHeight;
+        int terrainHeight = Mathf.FloorToInt(biome.terrainHeight * _Noise.Get2DPerlin(new Vector2(pos.x, pos.z), 0, biome.terrainScale)) + biome.solidGroundHeight;
         byte voxelValue = 0;
 
         if (yPos == terrainHeight)
@@ -159,7 +159,7 @@ public class World : MonoBehaviour
         if (voxelValue == 2) {
             foreach (Lode lode in biome.lodes) {
                 if (yPos > lode.minHeight && yPos < lode.maxHeight)
-                    if (Noise.Get3DPerlin(pos, lode.noiseOffset, lode.scale, lode.threshold))
+                    if (_Noise.Get3DPerlin(pos, lode.noiseOffset, lode.scale, lode.threshold))
                         voxelValue = lode.blockID;
             }
         }
