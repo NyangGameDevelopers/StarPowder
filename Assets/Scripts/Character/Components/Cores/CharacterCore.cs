@@ -34,7 +34,7 @@ public partial class CharacterCore : MonoBehaviour
         InitializeValues();
     }
 
-    private void Start()
+    private void OnEnable()
     {
         StartCoroutines();
     }
