@@ -81,6 +81,9 @@ public partial class CharacterCore : MonoBehaviour
         // 마녀
         public string witch = "WITCH";
 
+        // 탑승
+        public string onVehicle = "ON_VEHICLE";
+
         // 감정표현
         public string emotion0 = "EMOTION_CLAP";
 
@@ -119,7 +122,13 @@ public partial class CharacterCore : MonoBehaviour
         [Space]
         [Tooltip("일반모드 / 전투모드 변경")]
         public KeyCode changeBehaviorMode = KeyCode.Tab;
+
+        [Space]
+        [Tooltip("공격!")]
         public MouseButton attack = MouseButton.Left;
+
+        [Space]
+        public KeyCode rideOnVehicle = KeyCode.G; // 임시 : 탑승/해제
     }
     [SerializeField]
     private KeyOption _keyOption = new KeyOption();
@@ -173,8 +182,8 @@ public partial class CharacterCore : MonoBehaviour
         public float rotationSpeed = 2f;
         [Range(-90f, 0f), Tooltip("올려다보기 제한 각도")]
         public float lookUpDegree = -60f;
-        [Range(0f, 60f), Tooltip("내려다보기 제한 각도")]
-        public float lookDownDegree = 45f;
+        [Range(0f, 75f), Tooltip("내려다보기 제한 각도")]
+        public float lookDownDegree = 75f;
     }
 
     [Serializable]

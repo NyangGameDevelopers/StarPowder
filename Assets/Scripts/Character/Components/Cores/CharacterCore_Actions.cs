@@ -155,6 +155,12 @@ public partial class CharacterCore : MonoBehaviour
     /// <summary> 죽기 </summary>
     private void Die()
     {
+        if (State.isDead) return; // 이미 쥬금
+
+        // 차에 타고 있었으면 내리기
+        if(CharacterIsOnVehicleMode())
+            GetOffVehicle();
+
         SetDeadState(true);
         PlayResetAndDeathAnimation();
 
@@ -163,13 +169,15 @@ public partial class CharacterCore : MonoBehaviour
     /// <summary> 부활하기 </summary>
     private void Revive()
     {
+        if (!State.isDead) return; // 이미 생존
+
         SetDeadState(false);
 
         Debug.Mark(_debugPlayerActionCall);
     }
 
     /// <summary> 캐릭터 모드 변경 </summary>
-    private void ChangeBehaviorMode()
+    private void ChangeBehaviorToggle()
     {
         switch (State.behaviorMode)
         {
@@ -179,6 +187,57 @@ public partial class CharacterCore : MonoBehaviour
         }
 
         Debug.Mark(_debugPlayerActionCall);
+    }
+
+    /// <summary> 캐스팅! </summary>
+    private void Cast(in float duration, Action action)
+    {
+        // 기존에 캐스팅 중이었다면 취소
+        if (_castRoutine != null)
+        {
+            CancelCasting();
+        }
+
+        // 캐스팅!
+        _castRoutine = StartCoroutine(CastActionRoutine(duration, action));
+    }
+
+    /// <summary> 캐스팅 취소 </summary>
+    private void CancelCasting()
+    {
+        StopCoroutine(_castRoutine);
+        _castRoutine = null;
+        Current.castDuration = 0f;
+    }
+
+    /// <summary> 탑승 / 해제 토글 </summary>
+    private void ToggleVehicleState()
+    {
+        if (CharacterIsOnVehicleMode()) GetOffVehicle();
+        else RideOnVehicle();
+    }
+
+    /// <summary> 현재 등록한 탑승물에 타기! </summary>
+    private void RideOnVehicle()
+    {
+        Current.vehicle.gameObject.SetActive(true);
+        Character.localPosition = Current.vehicle.characterLocalPosition;
+
+        // 3인칭 뷰로 변경
+        SetCameraView(
+            CameraViewOption.ThirdPerson,
+            CurrentIsFPCamera() // TP카메라였으면 카메라 회전 인계하지 않음
+        );
+
+        SetBehaviorMode(BehaviorMode.OnVehicle);
+    }
+
+    /// <summary> 내려오기! </summary>
+    private void GetOffVehicle()
+    {
+        Current.vehicle.gameObject.SetActive(false);
+        Character.localPosition = default;
+        SetBehaviorMode(BehaviorMode.None);
     }
 
     /// <summary> 공격 </summary>
@@ -240,8 +299,22 @@ public partial class CharacterCore : MonoBehaviour
         }
 
         RBody.useGravity = true;
-        Vector3 next = _worldMoveDir * Speed.moveSpeed * 
-            (State.isRunning ? Speed.runSpeedMultiplier : 1f);
+
+        float moveSpeed;
+        float speedMultiplier;
+        if (CharacterIsOnVehicleMode())
+        {
+            moveSpeed = Current.vehicle.speed;
+            speedMultiplier = Current.vehicle.runMultiplier;
+        }
+        else
+        {
+            moveSpeed = Speed.moveSpeed;
+            speedMultiplier = Speed.runSpeedMultiplier;
+        }
+
+        Vector3 next = _worldMoveDir * moveSpeed * 
+            (State.isRunning ? speedMultiplier : 1f);
 
         RBody.velocity = new Vector3(next.x, RBody.velocity.y, next.z);
         UpdateMoveDirection(_moveDir);
@@ -251,13 +324,13 @@ public partial class CharacterCore : MonoBehaviour
         if (CurrentIsTPCamera())
         {
             Vector3 dir = TPCam.Rig.TransformDirection(_moveDir);
-            float currentY = CTran.localEulerAngles.y;
+            float currentY = Walker.localEulerAngles.y;
             float nextY = Quaternion.LookRotation(dir, Vector3.up).eulerAngles.y;
 
             if (nextY - currentY > 180f) nextY -= 360f;
             else if (currentY - nextY > 180f) nextY += 360f;
 
-            CTran.eulerAngles = Vector3.up * Mathf.Lerp(currentY, nextY, 0.05f);
+            Walker.eulerAngles = Vector3.up * Mathf.Lerp(currentY, nextY, 0.05f);
         }
 #endif
 
@@ -328,7 +401,7 @@ public partial class CharacterCore : MonoBehaviour
     {
         if (Input.GetKeyDown(Key.changeBehaviorMode))
         {
-            ChangeBehaviorMode();
+            ChangeBehaviorToggle();
 
             Debug.Mark(_debugInputActionCall);
         }
@@ -372,73 +445,123 @@ public partial class CharacterCore : MonoBehaviour
         }
     }
 
-    float cur=0f;
     /// <summary> 마우스를 상하/좌우로 움직여서 회전 </summary>
     private void Input_RotatePlayer()
     {
-        if (State.isCursorVisible && !_isMouseMiddlePressed)
-            return;
+        if (CurrentIsFPCamera()) RotateFP();
+        else RotateTP();
+    }
 
-        const float horizontalRotationFactor = 50f;
-        const float verticalRotationFactor = 50f;
+    private void RotateFP()
+    {
+        Transform fpCamRig = FPCam.Rig; // Rig : 상하 회전
+        Transform walker = Walker;  // Walker : 좌우 회전
 
         // ================================================
         // 상하 : 카메라 Rig 회전
         float vDegree = -Input.GetAxisRaw("Mouse Y");
-        float xRotPrev = _currentCam.Rig.localEulerAngles.x;
+        float xRotPrev = fpCamRig.localEulerAngles.x;
         float xRotNext = xRotPrev
             + vDegree
             * _currentCamOption.rotationSpeed
-            * Time.deltaTime
-            * verticalRotationFactor;
+            * Time.deltaTime * 50f;
 
         if (xRotNext > 180f)
             xRotNext -= 360f;
 
         // ================================================
-        // 좌우 : 캐릭터 회전 가능 상태 : 캐릭터 회전
-        //        캐릭터 회전 불능 상태 : Rig 회전
+        // 좌우 : 워커 회전
         float hDegree = Input.GetAxisRaw("Mouse X");
-        float yRotPrev = _currentCam.Rig.localEulerAngles.y;
+        float yRotPrev = walker.localEulerAngles.y;
         float yRotAdd =
             hDegree
             * _currentCamOption.rotationSpeed
-            * Time.deltaTime
-            * horizontalRotationFactor;
+            * Time.deltaTime * 50f;
         float yRotNext = yRotAdd + yRotPrev;
 
-        // 상하, 좌우 회전 가능 여부 판정
-        bool xRotatable = 
+        // 상하 회전 가능 여부
+        bool xRotatable =
             _currentCamOption.lookUpDegree < xRotNext &&
             _currentCamOption.lookDownDegree > xRotNext;
 
-        bool yRotatable =
+        // 좌우 회전 가능 여부
+        bool yRotatable = !CharacterIsUnableToMove();
+
+        // Rig 상하 회전 적용
+        fpCamRig.localEulerAngles = Vector3.right * (xRotatable ? xRotNext : xRotPrev);
+
+        // 워커 좌우 회전 적용
+        if (yRotatable)
+        {
+            walker.localEulerAngles = Vector3.up * yRotNext;
+        }
+    }
+
+    float cur;
+    private void RotateTP()
+    {
+        if (State.isCursorVisible && !_isMouseMiddlePressed)
+            return;
+
+        Transform tpCamRig = TPCam.Rig;
+
+        // ================================================
+        // 상하 : 카메라 Rig 회전
+        float vDegree = -Input.GetAxisRaw("Mouse Y");
+        float xRotPrev = tpCamRig.localEulerAngles.x;
+        float xRotNext = xRotPrev
+            + vDegree
+            * _currentCamOption.rotationSpeed
+            * Time.deltaTime * 50f;
+
+        if (xRotNext > 180f)
+            xRotNext -= 360f;
+
+        // ================================================
+        // 좌우 : 카메라 Rig 회전
+        float hDegree = Input.GetAxisRaw("Mouse X");
 #if MOVE2
-        CurrentIsFPCamera();
+        float yRotPrev = tpCamRig.localEulerAngles.y;
 #else
-        !CharacterIsDead() && !CharacterIsStunned();
+        float yRotPrev = Walker.localEulerAngles.y;
 #endif
+
+        float yRotAdd =
+            hDegree
+            * _currentCamOption.rotationSpeed
+            * Time.deltaTime * 50f;
+        float yRotNext = yRotAdd + yRotPrev;
+
+        // 상하 회전 가능 여부 판정
+        bool xRotatable =
+            _currentCamOption.lookUpDegree < xRotNext &&
+            _currentCamOption.lookDownDegree > xRotNext;
 
         Vector3 nextRot = new Vector3
         (
             xRotatable ? xRotNext : xRotPrev,
-            !yRotatable ? yRotNext : Mathf.SmoothDamp(yRotPrev, yRotPrev > 180f ? 360f : 0f, ref cur, 0.1f),
+#if !MOVE2
+            !CharacterIsUnableToMove() ? yRotNext : yRotPrev,
+#else
+            yRotNext,
+#endif
             0f
         );
 
-        // Rig 회전 적용
-        _currentCam.Rig.localEulerAngles = nextRot;
+        // Rig 상하좌우 회전 적용
+        tpCamRig.localEulerAngles = nextRot;
 
-        // 캐릭터 회전 적용
-        if (yRotatable && !CharacterIsRolling())
-            transform.localEulerAngles += Vector3.up * yRotAdd;
-
+#if !MOVE2
+        // 워커 좌우 회전 적용
+        if(!CharacterIsUnableToMove())
+            Walker.localEulerAngles = Vector3.up * yRotNext;
+#endif
     }
 
     /// <summary> TP Cam : 마우스 휠 굴려서 확대/축소 </summary>
     private void Input_CameraZoom()
     {
-        if (State.currentView == CameraViewOption.FirstPerson)
+        if (Current.cameraView == CameraViewOption.FirstPerson)
             return;
 
         _tpCameraWheelInput = Input.GetAxis("Mouse ScrollWheel");
@@ -461,24 +584,24 @@ public partial class CharacterCore : MonoBehaviour
         if (CurrentIsTPCamera())
         {
             _worldMoveDir = TPCam.Rig.TransformDirection(_moveDir);
-            checkDir = CTran.forward;
+            checkDir = Walker.forward;
         }
         else
         {
-            _worldMoveDir = transform.TransformDirection(_moveDir);
+            _worldMoveDir = Walker.TransformDirection(_moveDir);
             checkDir = _worldMoveDir;
         }
 #else
-        _worldMoveDir = transform.TransformDirection(_moveDir);
+        _worldMoveDir = Walker.TransformDirection(_moveDir);
         checkDir = _worldMoveDir;
 #endif
 
 
         // 벽 매미 현상 방지
         State.isAdjcentToWall =
-            CheckAdjecentToWall(checkDir, 0.1f) ||
+            CheckAdjecentToWall(checkDir, 0.05f) ||
             CheckAdjecentToWall(checkDir, 0.5f) ||
-            CheckAdjecentToWall(checkDir, 0.9f);
+            CheckAdjecentToWall(checkDir, 0.95f);
 
         if (State.isAdjcentToWall)
         {

@@ -31,18 +31,27 @@ public partial class CharacterCore : MonoBehaviour
 
     private void InitializeComponents()
     {
+        // Rigs (중요)
+        var charRig = GetComponentInAllChildren<CharacterRig>();
+        Character = charRig.transform;
+        Anim = Character.GetComponent<Animator>();
+
+        var weaponRig = GetComponentInAllChildren<WeaponRig>();
+        WeaponRigGo = weaponRig.gameObject;
+
+        var walkerRig = GetComponentInAllChildren<WalkerRig>();
+        Walker = walkerRig.transform;
+
         // Gets
         RBody = GetComponent<Rigidbody>();
-        Anim = GetComponentInChildren<Animator>();
 
         FPCam = GetComponentInAllChildren<FirstPersonCamera>();
         TPCam = GetComponentInAllChildren<ThirdPersonCamera>();
         FPCam.Init();
         TPCam.Init();
 
-        var weaponRig = GetComponentInAllChildren<WeaponRig>();
-        if (weaponRig != null)
-            WeaponRigGo = weaponRig.gameObject;
+        Current.vehicle = GetComponentInAllChildren<Vehicle>();
+        GetOffVehicle(); // 일단 자동차 비활성화
 
         // Error Check
         if (RBody == null) Debug.LogError("플레이어 캐릭터에 리지드바디가 존재하지 않습니다.");
@@ -51,8 +60,6 @@ public partial class CharacterCore : MonoBehaviour
         // Init Component Values
         RBody.constraints = RigidbodyConstraints.FreezeRotation;
         Anim.applyRootMotion = false;
-
-        CTran = Anim.transform;
     }
 
     private void InitializeValues()
@@ -66,7 +73,7 @@ public partial class CharacterCore : MonoBehaviour
         _tpCamZoomInitialDistance = Vector3.Magnitude(camToRig);
 
         // 초기 설정들
-        SetCameraView(State.currentView); // 초기 뷰 설정
+        SetCameraView(Current.cameraView); // 초기 뷰 설정
         SetCameraAlone(); // 카메라 한개 빼고 전부 비활성화
         SetBehaviorMode(BehaviorMode.None);
     }
@@ -103,7 +110,11 @@ public partial class CharacterCore : MonoBehaviour
             case BehaviorMode.Battle when binded:  return AnimationName.bind;
             case BehaviorMode.Battle when stunned: return AnimationName.stun;
              
-            case BehaviorMode.Witch: return AnimationName.witch;
+            // 마녀는 그냥 마녀만
+            case BehaviorMode.Witch:    return AnimationName.witch;
+
+            // 탑승도 얌전히 앉아있기만
+            case BehaviorMode.OnVehicle: return AnimationName.onVehicle;
 
             default: return AnimationName.none;
         }
@@ -124,10 +135,15 @@ public partial class CharacterCore : MonoBehaviour
     private void SetWalkingState(bool value) => State.isWalking = value;
     private void SetRunningState(bool value) => State.isRunning = value;
 
+    private void SetCastDuration(in float duration) => Current.castDuration = duration;
+
     private void SetBehaviorMode(BehaviorMode mode)
     {
         State.behaviorMode = mode;
-        WeaponRigGo.SetActive(!mode.Equals(BehaviorMode.None));
+        WeaponRigGo.SetActive(
+            mode.Equals(BehaviorMode.Battle) ||
+            mode.Equals(BehaviorMode.Witch)
+        );
     }
 
     private void SetCursorVisibleState(bool value)
@@ -144,36 +160,39 @@ public partial class CharacterCore : MonoBehaviour
         }
     }
 
-    private void SetCameraView(CameraViewOption view)
+    private void SetCameraView(CameraViewOption view, bool inheritRotation = true)
     {
-        State.currentView = view;
+        Current.cameraView = view;
         bool isFP = CurrentIsFPCamera();
 
         FPCam.Cam.gameObject.SetActive(isFP);
         TPCam.Cam.gameObject.SetActive(!isFP);
 
+        // TP -> FP
         if (isFP)
         {
             _currentCam = FPCam;
             _currentCamOption = FPCamOption;
 #if MOVE2
-            // TP에서 바라보던 방향 보정
-            float tpCamRotY = TPCam.Rig.eulerAngles.y;
-            transform.eulerAngles = Vector3.up * tpCamRotY;
-            CTran.localRotation     = default;
-            TPCam.Rig.localRotation = default;
+            // TP의 회전 인계
+            if (inheritRotation)
+            {
+                Walker.eulerAngles = TPCam.Rig.eulerAngles;
+            }
 #endif
         }
+        // FP -> TP
         else
         {
             _currentCam = TPCam;
             _currentCamOption = TPCamOption;
 #if MOVE2
-            // FP에서 바라보던 방향 보정
-            float rotY = transform.eulerAngles.y;
-            transform.rotation = default;
-            CTran.eulerAngles     = Vector3.up * rotY;
-            TPCam.Rig.eulerAngles = Vector3.up * rotY;
+            // FP의 회전 인계
+            if (inheritRotation)
+            {
+                TPCam.Rig.eulerAngles = Walker.eulerAngles;
+            }
+
 #endif
         }
     }
@@ -207,21 +226,21 @@ public partial class CharacterCore : MonoBehaviour
     {
         if (Plus(moveDir.z))
         {
-            if      (Minus(moveDir.x)) State.currentMoveDirection = MoveDirection.FrontLeft;
-            else if (Plus(moveDir.x))  State.currentMoveDirection = MoveDirection.FrontRight;
-            else State.currentMoveDirection = MoveDirection.Front;
+            if      (Minus(moveDir.x)) Current.moveDirection = MoveDirection.FrontLeft;
+            else if (Plus(moveDir.x))  Current.moveDirection = MoveDirection.FrontRight;
+            else Current.moveDirection = MoveDirection.Front;
         }
         else if (Minus(moveDir.z))
         {
-            if      (Minus(moveDir.x)) State.currentMoveDirection = MoveDirection.Backleft;
-            else if (Plus(moveDir.x))  State.currentMoveDirection = MoveDirection.BackRight;
-            else State.currentMoveDirection = MoveDirection.Back;
+            if      (Minus(moveDir.x)) Current.moveDirection = MoveDirection.Backleft;
+            else if (Plus(moveDir.x))  Current.moveDirection = MoveDirection.BackRight;
+            else Current.moveDirection = MoveDirection.Back;
         }
         else
         {
-            if      (Minus(moveDir.x)) State.currentMoveDirection = MoveDirection.Left;
-            else if (Plus(moveDir.x))  State.currentMoveDirection = MoveDirection.Right;
-            else State.currentMoveDirection = MoveDirection.None;
+            if      (Minus(moveDir.x)) Current.moveDirection = MoveDirection.Left;
+            else if (Plus(moveDir.x))  Current.moveDirection = MoveDirection.Right;
+            else Current.moveDirection = MoveDirection.None;
         }
 
         bool Plus(in float value) => (value > 0.1f);
@@ -302,11 +321,11 @@ public partial class CharacterCore : MonoBehaviour
         return false;
     }
 
-#endregion
+    #endregion
     /***********************************************************************
     *                               Calculation Methods
     ***********************************************************************/
-#region .
+    #region .
     private bool InRange(in float variable, in float min, in float max)
     {
         return variable >= min && variable <= max;

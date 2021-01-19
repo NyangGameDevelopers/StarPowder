@@ -38,6 +38,8 @@ public partial class CharacterCore : MonoBehaviour
     private bool _isMouseMiddlePressed = false;
     private bool _prevCursorVisibleState = false;
 
+    private float _prevYPos;
+
     /***********************************************************************
     *                               Current Variables
     ***********************************************************************/
@@ -63,7 +65,10 @@ public partial class CharacterCore : MonoBehaviour
 
     public GameObject WeaponRigGo { get; private set; }
 
-    // 캐릭터 트랜스폼
-    public Transform CTran { get; private set; }
+    // 워커(캐릭터, 탑승물 FP카메라의 부모) 트랜스폼
+    public Transform Walker { get; private set; }
+
+    // 캐릭터(워커 아래)
+    public Transform Character { get; private set; }
     #endregion
 }

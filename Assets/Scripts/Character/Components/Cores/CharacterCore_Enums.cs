@@ -41,7 +41,8 @@ public partial class CharacterCore : MonoBehaviour
     {
         None,
         Battle,
-        Witch,
+        Witch,     // 마녀에요
+        OnVehicle, // 탑승 중
     }
 
     public enum AnimType
