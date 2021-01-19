@@ -32,15 +32,20 @@ public partial class CharacterCore : MonoBehaviour
     private void InitializeComponents()
     {
         // Rigs (중요)
-        var charRig = GetComponentInAllChildren<CharacterRig>();
+        var charRig = GetComponentInChildren<CharacterRig>(); // 활성화된 캐릭터만 찾기
         Character = charRig.transform;
         Anim = Character.GetComponent<Animator>();
 
-        var weaponRig = GetComponentInAllChildren<WeaponRig>();
+        var weaponRig = charRig.GetComponentInAllChildren<WeaponRig>();// 해당 캐릭터의 무기 가져오기
         WeaponRigGo = weaponRig.gameObject;
 
         var walkerRig = GetComponentInAllChildren<WalkerRig>();
         Walker = walkerRig.transform;
+
+        // 캐릭터는 캐릭터 레이어 설정
+        SetLayerRecursive(Character, Layers.CharacterLayer);
+        // 무기는 기본 레이어 설정
+        SetLayerRecursive(WeaponRigGo.transform, Layers.Default);
 
         // Gets
         RBody = GetComponent<Rigidbody>();
@@ -173,7 +178,7 @@ public partial class CharacterCore : MonoBehaviour
         {
             _currentCam = FPCam;
             _currentCamOption = FPCamOption;
-#if MOVE2
+#if !OLDCAM
             // TP의 회전 인계
             if (inheritRotation)
             {
@@ -186,7 +191,7 @@ public partial class CharacterCore : MonoBehaviour
         {
             _currentCam = TPCam;
             _currentCamOption = TPCamOption;
-#if MOVE2
+#if !OLDCAM
             // FP의 회전 인계
             if (inheritRotation)
             {
@@ -194,6 +199,17 @@ public partial class CharacterCore : MonoBehaviour
             }
 
 #endif
+        }
+    }
+
+    /// <summary> 대상 게임오브젝트 및 모든 자식까지 재귀적으로 레이어 설정 </summary>
+    private void SetLayerRecursive(Transform target, int layer)
+    {
+        target.gameObject.layer = layer;
+
+        for (int i = 0; i < target.childCount; i++)
+        {
+            SetLayerRecursive(target.GetChild(i), layer);
         }
     }
 
