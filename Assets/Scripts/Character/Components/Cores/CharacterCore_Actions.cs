@@ -320,7 +320,7 @@ public partial class CharacterCore : MonoBehaviour
         UpdateMoveDirection(_moveDir);
 
         // 캐릭터 회전
-#if MOVE2
+#if !OLDCAM
         if (CurrentIsTPCamera())
         {
             Vector3 dir = TPCam.Rig.TransformDirection(_moveDir);
@@ -520,7 +520,7 @@ public partial class CharacterCore : MonoBehaviour
         // ================================================
         // 좌우 : 카메라 Rig 회전
         float hDegree = Input.GetAxisRaw("Mouse X");
-#if MOVE2
+#if !OLDCAM
         float yRotPrev = tpCamRig.localEulerAngles.y;
 #else
         float yRotPrev = Walker.localEulerAngles.y;
@@ -540,7 +540,7 @@ public partial class CharacterCore : MonoBehaviour
         Vector3 nextRot = new Vector3
         (
             xRotatable ? xRotNext : xRotPrev,
-#if !MOVE2
+#if OLDCAM
             !CharacterIsUnableToMove() ? yRotNext : yRotPrev,
 #else
             yRotNext,
@@ -551,7 +551,7 @@ public partial class CharacterCore : MonoBehaviour
         // Rig 상하좌우 회전 적용
         tpCamRig.localEulerAngles = nextRot;
 
-#if !MOVE2
+#if OLDCAM
         // 워커 좌우 회전 적용
         if(!CharacterIsUnableToMove())
             Walker.localEulerAngles = Vector3.up * yRotNext;
@@ -580,7 +580,7 @@ public partial class CharacterCore : MonoBehaviour
         _moveDir.Normalize();
         Vector3 checkDir;
 
-#if MOVE2
+#if !OLDCAM
         if (CurrentIsTPCamera())
         {
             _worldMoveDir = TPCam.Rig.TransformDirection(_moveDir);

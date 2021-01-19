@@ -21,7 +21,7 @@ public partial class CharacterCore : MonoBehaviour
         if (rollDir.magnitude < 0.1f)
             rollDir = Vector3.forward;
 
-#if MOVE2
+#if !OLDCAM
         if (CurrentIsTPCamera())
         {
             Anim.SetFloat("Roll Z", 1.0f);
