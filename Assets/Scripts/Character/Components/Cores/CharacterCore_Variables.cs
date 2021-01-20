@@ -63,7 +63,10 @@ public partial class CharacterCore : MonoBehaviour
     public FirstPersonCamera FPCam { get; private set; }
     public ThirdPersonCamera TPCam { get; private set; }
 
-    public GameObject WeaponRigGo { get; private set; }
+    /// <summary> 오른손 도구 </summary>
+    public GameObject RightHand { get; private set; }
+    /// <summary> 왼손 도구 </summary>
+    public GameObject LeftHand { get; private set; }
 
     // 워커(캐릭터, 탑승물 FP카메라의 부모) 트랜스폼
     public Transform Walker { get; private set; }

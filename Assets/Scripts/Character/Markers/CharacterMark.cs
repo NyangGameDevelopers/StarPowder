@@ -7,7 +7,7 @@ using UnityEngine;
 // 작성자 : Rito
 
 /// <summary> 얘는 캐릭터입니다 </summary>
-public class CharacterRig : RigBase
+public class CharacterMark : MarkBase
 {
 
 }

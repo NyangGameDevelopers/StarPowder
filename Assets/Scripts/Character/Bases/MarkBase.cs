@@ -6,7 +6,7 @@ using UnityEngine;
 // 날짜 : 2021-01-19 PM 7:38:12
 // 작성자 : Rito
 
-public abstract class RigBase : MonoBehaviour
+public abstract class MarkBase : MonoBehaviour
 {
     /// <summary> Active False인 자식도 다 뒤져서 컴포넌트 찾아오기 </summary>
     public T GetComponentInAllChildren<T>() where T : Component

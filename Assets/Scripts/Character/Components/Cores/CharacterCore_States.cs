@@ -61,6 +61,7 @@ public partial class CharacterCore : MonoBehaviour
         public float rollCooldown;
         public float attackCooldown;
         public float firstAttackCooldown;
+        public float secondAttackCooldown;
 
         // Durations : 잔여 진행(지속) 시간
         public float castDuration; // 시전 지속시간
@@ -68,6 +69,7 @@ public partial class CharacterCore : MonoBehaviour
         public float stunDuration;
         public float bindDuration;
         public float secondAttackChanceDuration;
+        public float thirdAttackChanceDuration;
 
         /// <summary> 지면으로부터의 거리 </summary>
         public float distFromGround;
@@ -81,6 +83,9 @@ public partial class CharacterCore : MonoBehaviour
         /// <summary> 두 번째 공격을 했는지 여부 </summary>
         public bool secondAttacked;
 
+        /// <summary> 세 번째 공격을 했는지 여부 </summary>
+        public bool thirdAttacked;
+
         /// <summary> 현재 캐릭터 이동 방향 </summary>
         public MoveDirection moveDirection = MoveDirection.None;
 
@@ -89,6 +94,15 @@ public partial class CharacterCore : MonoBehaviour
 
         /// <summary> 현재 등록된 이동수단 </summary>
         public Vehicle vehicle;
+
+        /// <summary> 현재 장착한 도구 </summary>
+        public ToolBase tool;
+
+        /// <summary> 현재 손꾸락 타입(오른손인지 양손 각각인지) </summary>
+        public HandType handType;
+
+        /// <summary> 현재 장착한 도구 타입 </summary>
+        public ToolType toolType;
     }
     [SerializeField]
     private CurrentStateValues _currentStates = new CurrentStateValues();

@@ -56,4 +56,24 @@ public partial class CharacterCore : MonoBehaviour
         Die,
         Emotion,
     }
+
+    /// <summary> 장착한 도구 타입 </summary>
+    public enum ToolType
+    {
+        None,
+        Weapon,
+    }
 }
+
+/***********************************************************************
+*                               Global Enums
+***********************************************************************/
+#region .
+/// <summary> 들고 있는 손 타입 </summary>
+public enum HandType
+{
+    OneHand, // 오른손에만 들고 있음
+    TwoHand  // 양 손에 하나씩 들고 있음
+}
+
+#endregion

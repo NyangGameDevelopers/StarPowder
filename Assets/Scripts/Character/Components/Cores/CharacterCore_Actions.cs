@@ -98,12 +98,14 @@ public partial class CharacterCore : MonoBehaviour
         Decline(ref Current.rollCooldown, deltaTime);
         Decline(ref Current.attackCooldown, deltaTime);
         Decline(ref Current.firstAttackCooldown, deltaTime);
+        Decline(ref Current.secondAttackCooldown, deltaTime);
 
         // 2. Duration
         Decline(ref Current.rollDuration, deltaTime);
         Decline(ref Current.stunDuration, deltaTime);
         Decline(ref Current.bindDuration, deltaTime);
         Decline(ref Current.secondAttackChanceDuration, deltaTime);
+        Decline(ref Current.thirdAttackChanceDuration, deltaTime);
 
         // 3. Change States
         SetRollState(Current.rollDuration > 0f);
@@ -137,7 +139,11 @@ public partial class CharacterCore : MonoBehaviour
 
         SetGroundState(Current.distFromGround < 0.1f);
 
-        Anim.SetFloat("Move Y", Mathf.Clamp(RBody.velocity.y, -1f, 1f));
+        // 부드러운 애니메이션을 위해 러프값 제공
+        float goalValue = Mathf.Clamp(RBody.velocity.y, -1f, 1f);
+        animSpeedY = Mathf.Lerp(animSpeedY, goalValue, 0.02f);
+
+        Anim.SetFloat("Move Y", animSpeedY);
 
         if (State.isGrounded)
         {
@@ -250,11 +256,19 @@ public partial class CharacterCore : MonoBehaviour
         {
             FirstAttack();
         }
-        else if (!Current.secondAttacked
+        else if (
+            !Current.secondAttacked
             && Current.firstAttackCooldown < 0.01f
             && Current.secondAttackChanceDuration > 0f)
         {
             SecondAttack();
+        }
+        else if (Current.handType == HandType.TwoHand &&
+            !Current.thirdAttacked
+            && Current.secondAttackCooldown < 0.01f
+            && Current.thirdAttackChanceDuration > 0f)
+        {
+            ThirdAttack();
         }
 
         Debug.Mark(_debugPlayerActionCall);
@@ -268,14 +282,25 @@ public partial class CharacterCore : MonoBehaviour
             (Cooldown.firstAttack + Duration.secondAttackChance) / Speed.attackSpeed;
         Current.secondAttacked = false;
 
-        Anim.Play(AnimationName.upperBattleAttack0, AnimationUpper);
+        Anim.Play(GetAttackAnimation(1), AnimationUpper);
 
         Debug.Mark(_debugPlayerActionCall);
     }
     private void SecondAttack()
     {
         Current.secondAttacked = true;
-        Anim.Play(AnimationName.upperBattleAttack1, AnimationUpper);
+        Current.secondAttackCooldown = Cooldown.secondAttack / Speed.attackSpeed;
+        Current.thirdAttackChanceDuration =
+            (Cooldown.secondAttack + Duration.thirdAttackChance) / Speed.attackSpeed;
+        Current.thirdAttacked = false;
+        Anim.Play(GetAttackAnimation(2), AnimationUpper);
+
+        Debug.Mark(_debugPlayerActionCall);
+    }
+    private void ThirdAttack()
+    {
+        Current.thirdAttacked = true;
+        Anim.Play(GetAttackAnimation(3), AnimationUpper);
 
         Debug.Mark(_debugPlayerActionCall);
     }
@@ -579,22 +604,40 @@ public partial class CharacterCore : MonoBehaviour
 
         _moveDir.Normalize();
         Vector3 checkDir;
+        Vector3 animDir; // 애니메이션 적용할 기준 방향벡터
 
 #if !OLDCAM
         if (CurrentIsTPCamera())
         {
             _worldMoveDir = TPCam.Rig.TransformDirection(_moveDir);
+            animDir = Walker.InverseTransformDirection(_worldMoveDir);
             checkDir = Walker.forward;
         }
         else
         {
             _worldMoveDir = Walker.TransformDirection(_moveDir);
+            animDir = _moveDir;
             checkDir = _worldMoveDir;
         }
 #else
         _worldMoveDir = Walker.TransformDirection(_moveDir);
         checkDir = _worldMoveDir;
 #endif
+
+        bool isRunningKeyDown = Input.GetKey(Key.run);
+        bool moving = _moveDir.magnitude > 0.1f && !CharacterIsRolling();
+
+        SetMovingState(moving);
+        SetWalkingState(moving && !isRunningKeyDown);
+        SetRunningState(moving && isRunningKeyDown);
+
+        // 애니메이션 파라미터 설정
+        float mul = State.isWalking ? 0.5f : 1f;
+        animSpeedX = Mathf.Lerp(animSpeedX, animDir.x * mul, 0.05f);
+        animSpeedZ = Mathf.Lerp(animSpeedZ, animDir.z * mul, 0.05f);
+
+        Anim.SetFloat("Move X", animSpeedX);
+        Anim.SetFloat("Move Z", animSpeedZ);
 
 
         // 벽 매미 현상 방지
@@ -608,25 +651,11 @@ public partial class CharacterCore : MonoBehaviour
             _worldMoveDir = default;
         }
 
-        bool isRunningKeyDown = Input.GetKey(Key.run);
-        bool moving = _moveDir.magnitude > 0.1f && !CharacterIsRolling();
-
-        SetMovingState(moving);
-        SetWalkingState(moving && !isRunningKeyDown);
-        SetRunningState(moving && isRunningKeyDown);
-
-        // 애니메이션 파라미터 설정
-        float mul = State.isWalking ? 0.5f : 1f;
-        animSpeedX = Mathf.Lerp(animSpeedX, _moveDir.x * mul, 0.05f);
-        animSpeedZ = Mathf.Lerp(animSpeedZ, _moveDir.z * mul, 0.05f);
-
-        Anim.SetFloat("Move X", animSpeedX);
-        Anim.SetFloat("Move Z", animSpeedZ);
-
         if (_moveDir.magnitude > 0.1f)
             Debug.Mark(_debugInputActionCall);
     }
-    private float animSpeedX = 0f;
+    private float animSpeedX = 0f; // 부드러운 이동을 위해 이전 값 기억 (Lerp)
+    private float animSpeedY = 0f;
     private float animSpeedZ = 0f;
 
 #endregion
