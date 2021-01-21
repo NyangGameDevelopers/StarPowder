@@ -6,7 +6,7 @@ using UnityEngine;
 [RequireComponent(typeof(Status))]
 public class CasterCore : MonoBehaviour
 {
-    private Status status;
+    public Status status { get; private set; }
     void Awake()
     {
         status = GetComponent<Status>();
@@ -22,4 +22,5 @@ public class CasterCore : MonoBehaviour
     {
 
     }
+    void Cast(SkillData data){}
 }
