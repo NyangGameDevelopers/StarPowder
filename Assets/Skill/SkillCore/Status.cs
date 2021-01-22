@@ -16,6 +16,7 @@ public class Status : MonoBehaviour
     {
         Health,
         Stamina,
+        Mana,
     }
     public Container<LiteralKey, string> Literals { get; private set; }
     public Container<NumericKey, float> Numerics { get; private set; }
@@ -35,9 +36,48 @@ public class Status : MonoBehaviour
     {
 
     }
+    public bool PayMana(float mana)
+    {
+        if (!Numerics.Exist(NumericKey.Mana))
+        {
+            return false;
+        }
+        var expectedMana = Numerics[NumericKey.Mana] - mana;
+        var result = expectedMana >= 0;
+        Numerics[NumericKey.Mana] = expectedMana;
+        return result;
+    }
+    public DamageResult Damage(Status dealer, float coefficient)
+    {
+        if (!Numerics.Exist(NumericKey.Health))
+        {
+            return DamageResult.Impossible;
+        }
+        // TODO : 공격 계산식
+        var currentHealth = Numerics[NumericKey.Health];
+        if (currentHealth <= 0)
+        {
+            return DamageResult.Dead;
+        }
+        var expectedHealth = currentHealth - coefficient;
+        if (expectedHealth <= 0)
+        {
+            Numerics[NumericKey.Health] = 0;
+            return DamageResult.Die;
+        }
+        Numerics[NumericKey.Health] = expectedHealth;
+        return DamageResult.Alive;
+    }
 
 }
 
+public enum DamageResult
+{
+    Impossible,
+    Alive,
+    Die,
+    Dead,
+}
 public class Container<TK, TV>
 where TK : System.Enum
 {
