@@ -5,8 +5,6 @@ using UnityEngine;
 using Rito.BehaviorTree;
 using Rito.CustomAttributes;
 
-using static Rito.BehaviorTree.NodeHelper;
-
 // 2021-01-07 21:56
 // 작성자 : Rito
 
@@ -34,7 +32,7 @@ public partial class CharacterCore : MonoBehaviour
         InitializeValues();
     }
 
-    private void Start()
+    private void OnEnable()
     {
         StartCoroutines();
     }

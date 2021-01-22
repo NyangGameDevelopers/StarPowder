@@ -32,15 +32,24 @@ public partial class CharacterCore : MonoBehaviour
     private void InitializeComponents()
     {
         // Rigs (중요)
-        var charRig = GetComponentInAllChildren<CharacterRig>();
+        var charRig = GetComponentInChildren<CharacterMark>(); // 활성화된 캐릭터만 찾기
         Character = charRig.transform;
         Anim = Character.GetComponent<Animator>();
 
-        var weaponRig = GetComponentInAllChildren<WeaponRig>();
-        WeaponRigGo = weaponRig.gameObject;
+        // 손꾸락
+        var rightHand = charRig.GetComponentInAllChildren<RightHandMark>();
+        RightHand = rightHand.gameObject;
+        var leftHand = charRig.GetComponentInAllChildren<LeftHandMark>();
+        LeftHand = leftHand.gameObject;
 
-        var walkerRig = GetComponentInAllChildren<WalkerRig>();
+        var walkerRig = GetComponentInAllChildren<WalkerMark>();
         Walker = walkerRig.transform;
+
+        // 캐릭터는 캐릭터 레이어 설정
+        SetLayerRecursive(Character, Layers.CharacterLayer);
+        // 무기는 기본 레이어 설정
+        SetLayerRecursive(LeftHand.transform, Layers.Default);
+        SetLayerRecursive(RightHand.transform, Layers.Default);
 
         // Gets
         RBody = GetComponent<Rigidbody>();
@@ -80,7 +89,7 @@ public partial class CharacterCore : MonoBehaviour
 
     #endregion
     /***********************************************************************
-    *                               Getter Methods
+    *                            Getter Methods
     ***********************************************************************/
     #region .
     /// <summary> 현재 모드에 따라 알맞은 애니메이션 이름 참조 </summary>
@@ -96,7 +105,10 @@ public partial class CharacterCore : MonoBehaviour
         bool binded = type.Equals(AnimType.Bind);
         bool stunned = type.Equals(AnimType.Stun);
 
-        switch(State.behaviorMode)
+        bool oneHand = Current.handType.Equals(HandType.OneHand);
+        bool twoHand = Current.handType.Equals(HandType.TwoHand);
+
+        switch (State.behaviorMode)
         {
             case BehaviorMode.None when idle:    return AnimationName.idle;
             case BehaviorMode.None when moving:  return AnimationName.move;
@@ -104,9 +116,14 @@ public partial class CharacterCore : MonoBehaviour
             case BehaviorMode.None when binded:  return AnimationName.bind;
             case BehaviorMode.None when stunned: return AnimationName.stun;
              
-            case BehaviorMode.Battle when idle:    return AnimationName.battleIdle;
-            case BehaviorMode.Battle when moving:  return AnimationName.battleMove;
-            case BehaviorMode.Battle when rolling: return AnimationName.roll;
+            case BehaviorMode.Battle when oneHand && idle:    return AnimationName.oneHandIdle;
+            case BehaviorMode.Battle when oneHand && moving:  return AnimationName.oneHandMove;
+            case BehaviorMode.Battle when oneHand && rolling: return AnimationName.oneHandRoll;
+             
+            case BehaviorMode.Battle when twoHand && idle:    return AnimationName.twoHandIdle;
+            case BehaviorMode.Battle when twoHand && moving:  return AnimationName.twoHandMove;
+            case BehaviorMode.Battle when twoHand && rolling: return AnimationName.twoHandRoll;
+
             case BehaviorMode.Battle when binded:  return AnimationName.bind;
             case BehaviorMode.Battle when stunned: return AnimationName.stun;
              
@@ -118,6 +135,24 @@ public partial class CharacterCore : MonoBehaviour
 
             default: return AnimationName.none;
         }
+    }
+
+    /// <summary> 현재 손 타입, 공격 인덱스(1, 2)에 따라 공격 애니메이션 이름 가져오기 </summary>
+    public string GetAttackAnimation(int attackIndex)
+    {
+        switch (Current.handType)
+        {
+            case HandType.OneHand when attackIndex == 1: return AnimationName.oneHandAttack1;
+            case HandType.OneHand when attackIndex == 2: return AnimationName.oneHandAttack2;
+            case HandType.OneHand when attackIndex == 3: return AnimationName.oneHandAttack3;
+
+            case HandType.TwoHand when attackIndex == 1: return AnimationName.twoHandAttack1;
+            case HandType.TwoHand when attackIndex == 2: return AnimationName.twoHandAttack2;
+            case HandType.TwoHand when attackIndex == 3: return AnimationName.twoHandAttack3;
+        }
+
+        Debug.Log("Methods_GetAttackAnimation : 잘못된 참조");
+        return "";
     }
 
     #endregion
@@ -137,13 +172,31 @@ public partial class CharacterCore : MonoBehaviour
 
     private void SetCastDuration(in float duration) => Current.castDuration = duration;
 
+    /// <summary> 행동모드 변경, 변경에 따른 양손 액티브 상태 조절 </summary>
     private void SetBehaviorMode(BehaviorMode mode)
     {
         State.behaviorMode = mode;
-        WeaponRigGo.SetActive(
+
+        // 손 게임오브젝트 활성화 상태 변경
+        RightHand.SetActive(
             mode.Equals(BehaviorMode.Battle) ||
             mode.Equals(BehaviorMode.Witch)
         );
+        LeftHand.SetActive(
+            mode.Equals(BehaviorMode.Battle)
+        );
+
+        // 사용 중인 도구 종류 갱신
+        switch (mode)
+        {
+            case BehaviorMode.Battle:
+                Current.toolType = ToolType.Weapon;
+                break;
+
+            default:
+                Current.toolType = ToolType.None;
+                break;
+        }
     }
 
     private void SetCursorVisibleState(bool value)
@@ -173,7 +226,7 @@ public partial class CharacterCore : MonoBehaviour
         {
             _currentCam = FPCam;
             _currentCamOption = FPCamOption;
-#if MOVE2
+#if !OLDCAM
             // TP의 회전 인계
             if (inheritRotation)
             {
@@ -186,7 +239,7 @@ public partial class CharacterCore : MonoBehaviour
         {
             _currentCam = TPCam;
             _currentCamOption = TPCamOption;
-#if MOVE2
+#if !OLDCAM
             // FP의 회전 인계
             if (inheritRotation)
             {
@@ -194,6 +247,17 @@ public partial class CharacterCore : MonoBehaviour
             }
 
 #endif
+        }
+    }
+
+    /// <summary> 대상 게임오브젝트 및 모든 자식까지 재귀적으로 레이어 설정 </summary>
+    private void SetLayerRecursive(Transform target, int layer)
+    {
+        target.gameObject.layer = layer;
+
+        for (int i = 0; i < target.childCount; i++)
+        {
+            SetLayerRecursive(target.GetChild(i), layer);
         }
     }
 
@@ -249,7 +313,7 @@ public partial class CharacterCore : MonoBehaviour
 
 #endregion
     /***********************************************************************
-    *                             Finder Methods
+    *                            Finder Methods
     ***********************************************************************/
 #region .
     /// <summary> Active False인 자식도 다 뒤져서 컴포넌트 찾아오기 </summary>
@@ -278,7 +342,7 @@ public partial class CharacterCore : MonoBehaviour
 
 #endregion
     /***********************************************************************
-    *                               Checker Methods
+    *                            Checker Methods
     ***********************************************************************/
 #region .
 
@@ -323,7 +387,7 @@ public partial class CharacterCore : MonoBehaviour
 
     #endregion
     /***********************************************************************
-    *                               Calculation Methods
+    *                            Calculation Methods
     ***********************************************************************/
     #region .
     private bool InRange(in float variable, in float min, in float max)
