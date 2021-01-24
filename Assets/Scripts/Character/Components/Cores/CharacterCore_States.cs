@@ -57,19 +57,15 @@ public partial class CharacterCore : MonoBehaviour
     [Serializable]
     public class CurrentStateValues
     {
-        // Cooldowns : 잔여 쿨타임
+        // Cooldowns : 잔여 쿨타임 (감소 중)
         public float rollCooldown;
-        public float attackCooldown;
-        public float firstAttackCooldown;
-        public float secondAttackCooldown;
+        public float toolCooldown; // 도구 사용 쿨다운
 
         // Durations : 잔여 진행(지속) 시간
         public float castDuration; // 시전 지속시간
         public float rollDuration;
         public float stunDuration;
         public float bindDuration;
-        public float secondAttackChanceDuration;
-        public float thirdAttackChanceDuration;
 
         /// <summary> 지면으로부터의 거리 </summary>
         public float distFromGround;
@@ -79,12 +75,6 @@ public partial class CharacterCore : MonoBehaviour
 
         /// <summary> 더블점프를 썼는지 여부 </summary>
         public bool doubleJumped;
-
-        /// <summary> 두 번째 공격을 했는지 여부 </summary>
-        public bool secondAttacked;
-
-        /// <summary> 세 번째 공격을 했는지 여부 </summary>
-        public bool thirdAttacked;
 
         /// <summary> 현재 캐릭터 이동 방향 </summary>
         public MoveDirection moveDirection = MoveDirection.None;
@@ -96,13 +86,7 @@ public partial class CharacterCore : MonoBehaviour
         public Vehicle vehicle;
 
         /// <summary> 현재 장착한 도구 </summary>
-        public ToolBase tool;
-
-        /// <summary> 현재 손꾸락 타입(오른손인지 양손 각각인지) </summary>
-        public HandType handType;
-
-        /// <summary> 현재 장착한 도구 타입 </summary>
-        public ToolType toolType;
+        public Tool tool;
     }
     [SerializeField]
     private CurrentStateValues _currentStates = new CurrentStateValues();

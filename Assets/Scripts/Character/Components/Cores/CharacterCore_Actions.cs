@@ -80,7 +80,14 @@ public partial class CharacterCore : MonoBehaviour
     /// <summary> 상체 애니메이션 초기화 </summary>
     private void ResetUpperAnimation()
     {
-        Anim.Play(GetAnimation(AnimType.None), AnimationUpper);
+        Anim.Play(AnimationName.none, AnimationUpper);
+        Debug.Mark(_debugPlayAnimationCall);
+    }
+
+    /// <summary> 상체 애니메이션 재생 </summary>
+    private void PlayUpperAnimation(in string animationName)
+    {
+        Anim.Play(animationName, AnimationUpper);
         Debug.Mark(_debugPlayAnimationCall);
     }
 
@@ -96,16 +103,12 @@ public partial class CharacterCore : MonoBehaviour
 
         // 1. Cooldown
         Decline(ref Current.rollCooldown, deltaTime);
-        Decline(ref Current.attackCooldown, deltaTime);
-        Decline(ref Current.firstAttackCooldown, deltaTime);
-        Decline(ref Current.secondAttackCooldown, deltaTime);
+        Decline(ref Current.toolCooldown, deltaTime);
 
         // 2. Duration
         Decline(ref Current.rollDuration, deltaTime);
         Decline(ref Current.stunDuration, deltaTime);
         Decline(ref Current.bindDuration, deltaTime);
-        Decline(ref Current.secondAttackChanceDuration, deltaTime);
-        Decline(ref Current.thirdAttackChanceDuration, deltaTime);
 
         // 3. Change States
         SetRollState(Current.rollDuration > 0f);
@@ -141,7 +144,7 @@ public partial class CharacterCore : MonoBehaviour
 
         // 부드러운 애니메이션을 위해 러프값 제공
         float goalValue = Mathf.Clamp(RBody.velocity.y, -1f, 1f);
-        animSpeedY = Mathf.Lerp(animSpeedY, goalValue, 0.02f);
+        animSpeedY = Mathf.Lerp(animSpeedY, goalValue, 0.05f);
 
         Anim.SetFloat("Move Y", animSpeedY);
 
@@ -182,14 +185,20 @@ public partial class CharacterCore : MonoBehaviour
         Debug.Mark(_debugPlayerActionCall);
     }
 
-    /// <summary> 캐릭터 모드 변경 </summary>
+    // [임시]
+    /// <summary> 캐릭터 모드 변경 토글</summary>
     private void ChangeBehaviorToggle()
     {
         switch (State.behaviorMode)
         {
-            case BehaviorMode.None: SetBehaviorMode(BehaviorMode.Battle); break;
-            case BehaviorMode.Battle:SetBehaviorMode(BehaviorMode.Witch); break;
-            case BehaviorMode.Witch:SetBehaviorMode(BehaviorMode.None); break;
+            case BehaviorMode.None:
+                SetBehaviorMode(BehaviorMode.Equip);
+                break;
+
+            case BehaviorMode.Equip:
+            case BehaviorMode.Witch:
+                SetBehaviorMode(BehaviorMode.None);
+                break;
         }
 
         Debug.Mark(_debugPlayerActionCall);
@@ -246,61 +255,32 @@ public partial class CharacterCore : MonoBehaviour
         SetBehaviorMode(BehaviorMode.None);
     }
 
-    /// <summary> 공격 </summary>
-    private void AttackAndPlayAnimation()
+    /// <summary> 도구 사용하고 애니메이션 재생 </summary>
+    private void UseToolAndPlayAnimation()
     {
-        //if (!CharacterIsBattleMode()) return;
-        Anim.SetFloat("Attack Speed", Speed.attackSpeed);
+        if (OnToolCooldown()) return;
+        //Anim.SetFloat("Attack Speed", Speed.attackSpeed);
 
-        if (Current.attackCooldown < 0.01f)
+        Current.tool.Act(out ToolActionResult result);
+
+        // 도구 사용 성공 시
+        if (result.succeeded)
         {
-            FirstAttack();
+            string animationName = "";
+
+            switch (Current.tool)
+            {
+                case Weapon weapon:
+                    animationName = GetAttackAnimation(result.motionIndex);
+                    break;
+            }
+
+            // 애니메이션 재생
+            PlayUpperAnimation(animationName);
+
+            // 도구 사용 쿨타임 세팅
+            SetToolCooldown(result.coolDown);
         }
-        else if (
-            !Current.secondAttacked
-            && Current.firstAttackCooldown < 0.01f
-            && Current.secondAttackChanceDuration > 0f)
-        {
-            SecondAttack();
-        }
-        else if (Current.handType == HandType.TwoHand &&
-            !Current.thirdAttacked
-            && Current.secondAttackCooldown < 0.01f
-            && Current.thirdAttackChanceDuration > 0f)
-        {
-            ThirdAttack();
-        }
-
-        Debug.Mark(_debugPlayerActionCall);
-    }
-    private void FirstAttack()
-    {
-        // 쿨타임, 지속시간 세팅
-        Current.attackCooldown = Cooldown.attack / Speed.attackSpeed;
-        Current.firstAttackCooldown = Cooldown.firstAttack / Speed.attackSpeed;
-        Current.secondAttackChanceDuration =
-            (Cooldown.firstAttack + Duration.secondAttackChance) / Speed.attackSpeed;
-        Current.secondAttacked = false;
-
-        Anim.Play(GetAttackAnimation(1), AnimationUpper);
-
-        Debug.Mark(_debugPlayerActionCall);
-    }
-    private void SecondAttack()
-    {
-        Current.secondAttacked = true;
-        Current.secondAttackCooldown = Cooldown.secondAttack / Speed.attackSpeed;
-        Current.thirdAttackChanceDuration =
-            (Cooldown.secondAttack + Duration.thirdAttackChance) / Speed.attackSpeed;
-        Current.thirdAttacked = false;
-        Anim.Play(GetAttackAnimation(2), AnimationUpper);
-
-        Debug.Mark(_debugPlayerActionCall);
-    }
-    private void ThirdAttack()
-    {
-        Current.thirdAttacked = true;
-        Anim.Play(GetAttackAnimation(3), AnimationUpper);
 
         Debug.Mark(_debugPlayerActionCall);
     }
@@ -366,7 +346,7 @@ public partial class CharacterCore : MonoBehaviour
     private void RollWASD()
     {
         if (CharacterIsUnableToMove()) return;
-        if (OnFirstAttackCooldown()) return;
+        if (OnToolCooldown()) return;
         if (OnRollingCooldown()) return;
 
         // 공중 구르기 스킬이 없으면 땅에서만 구르기 가능

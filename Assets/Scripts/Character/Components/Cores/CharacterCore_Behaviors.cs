@@ -40,7 +40,17 @@ public partial class CharacterCore : MonoBehaviour
                 Action(Input_CameraZoom),
                 Action(Input_CalculateMoveDirection),
 
-                Sequence // 행동 모드 변경 : 일반 <-> 전투 <-> 마녀
+                // 임시 : 무기 변경 토글
+                IfAction(() => !OnToolCooldown() && 
+                                CharacterIsEquippedMode() && 
+                                Input.GetKeyDown(KeyCode.Z),
+                         () => {
+                             ToolBox.SwitchNextTool(LeftHand, RightHand);
+                             Current.tool = ToolBox.CurrentTool;
+                             SetBehaviorMode(BehaviorMode.Equip);
+                             }),
+
+                Sequence // 행동 모드 변경 : 일반 <-> 도구 사용 <-> 마녀
                 (
                     NotCondition(CharacterIsDead),
                     NotCondition(CharacterIsStunned),
@@ -79,39 +89,40 @@ public partial class CharacterCore : MonoBehaviour
                     // 탑승 키 누르면 탑승
                     Sequence
                     (
+                        NotCondition(OnToolCooldown), // 도구 사용 쿨타임 중인 경우 점프 불가
                         NotCondition(CharacterIsUnableToMove),
                         NotCondition(CharacterIsJumping),
                         Condition(() => Input.GetKeyDown(Key.rideOnVehicle)),
                         Action(ToggleVehicleState)
                     ),
 
-                    // 탑승하면 얌전히 이동만
                     Sequence
                     (
                         Condition(CharacterIsOnVehicleMode),
                         Action(MoveWASD)
-                    ),
+                    ), // 탑승하면 얌전히 이동만 가능 =======================================
 
-                    // Attack
+                    // 도구 사용(무기 공격 포함)
                     Sequence
                     (
-                        Condition(CharacterIsBattleMode),
+                        Condition(CharacterIsEquippedMode),
                         Condition(CharacterIsGrounded),
-                        IfAction(AttackKeyDown, AttackAndPlayAnimation)
+                        IfAction(AttackKeyDown, UseToolAndPlayAnimation)
                     ),
 
                     Condition(CharacterIsBinded),
+                    // 속박시 아래 행동 불가능 ===============================================
 
-                    // Jump
+                    // 점프
                     Sequence
                     (
-                        NotCondition(OnFirstAttackCooldown),
+                        NotCondition(OnToolCooldown), // 도구 사용 쿨타임 중인 경우 점프 불가
                         IfAction(JumpKeyDown, Jump),
                         Action(ResetUpperAnimation),
                         Action(PlayIdleAnimation)
                     ),
 
-                    // Roll
+                    // 구르기
                     Sequence
                     (
                         NotCondition(CharacterIsWitchMode),
