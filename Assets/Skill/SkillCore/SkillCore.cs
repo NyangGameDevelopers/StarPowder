@@ -3,36 +3,36 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
-[RequireComponent(typeof(Rigidbody), typeof(Collider), typeof(Status))]
+[RequireComponent(typeof(Rigidbody), typeof(Status))]
 public class SkillCore : MonoBehaviour
 {
 
     #region 설정값
     [SerializeField]
     [Range(0f, 0.300f)]
-    private float UpdateFrequency = 0.02f;
-    #endregion
+    public float UpdateFrequency = 0.02f;
 
+    [SerializeField]
+    public SkillData skillData;
+    #endregion
 
     #region 로컬 정보값
     private skill.State state;
-    private SkillData skillData;
+    private skill.INode node;
     #endregion
 
     #region 다른 스크립트
-    public Rigidbody ownRigid { get; private set; }
-    public Collider ownColli { get; private set; }
-    public Status status { get; private set; }
+    public Rigidbody ownRigid { get; protected set; }
+    public Collider ownColli { get; internal set; }
+    public Status status { get; protected set; }
     #endregion
 
     void Awake()
     {
         ownRigid = GetComponent<Rigidbody>();
-        ownColli = GetComponent<Collider>();
         status = GetComponent<Status>();
-
         // TODO : 잘못된 CasterCore에서 생성 요청시에 오류 발생
-        _state = new skill.State(
+        state = new skill.State(
             this.transform.parent.gameObject.GetComponent<CasterCore>(),
             this
         );
@@ -41,16 +41,27 @@ public class SkillCore : MonoBehaviour
     void Start()
     {
         ownRigid.isKinematic = true;
+        node = skillData.spellBase.Build(state);
     }
 
     // Update is called once per frame
     void Update()
     {
+        // 상태에 따른 선호출 제어
+        switch (state.runState)
+        {
+            case skill.RunState.Wait:
+                state.DoOnWaitUpdate();
+                return;
+            case skill.RunState.End:
+            case skill.RunState.Exit:
+                Destroy(gameObject);
+                return;
+        }
         // 상태 업데이트
         state.deltatime = Time.deltaTime;
         state.runtime += Time.deltaTime;
-        // 상태에 따른 호출 제어
-
+        node.Calling(state);
     }
 }
 
@@ -71,6 +82,7 @@ namespace skill
         public float deltatime;
         public RunState runState { get; private set; }
         public event Action<State, GameObject> OnContact;
+        public event Action<State> OnWaitUpdate;
 
         public State(CasterCore caster, SkillCore skill)
         {
@@ -82,6 +94,11 @@ namespace skill
         public void ChangeState(RunState runState)
         {
             this.runState = runState;
+        }
+        public void DoOnWaitUpdate()
+        {
+
+            OnWaitUpdate(this);
         }
     }
 
@@ -174,52 +191,20 @@ namespace skill
     }
     #endregion
 
-    // 쿨타임
+    // [!] 추가할 기능
     // 플레이어 밀어내기
     // 스테이터스 버프/디버프,
     // 스테이터스 계수,
     // 스킬 호출 체인,
-    // 스킬 호출 체인,
-    // Timeout, Interval
+    // Interval
     // 소환수 관리 : 캐스터 자식으로 스폰
     // 필터링
-
-
-
     public static class Node
     {
         public static IBase Spell(params IBase[] steps) { return Block(steps); }
         public static BBlock Block(params IBase[] steps)
         {
             return new BBlock(steps.ToList());
-        }
-        public static BLoop Loop(int count, params IBase[] steps)
-        {
-            return new BLoop(Block(steps), count);
-        }
-        public static BUntil Until(IBaseInterrupt when, params IBase[] steps)
-        {
-            return new BUntil(when, Block(steps));
-        }
-        public static IBase Require()
-        {
-            return new BNWork((state) =>
-            {
-                if (state.targets.Count() < 1)
-                {
-                    state.ChangeState(RunState.Exit);
-                }
-            });
-        }
-        public static IBase Require(Predicate<State> predicate)
-        {
-            return new BNWork((state) =>
-            {
-                if (!predicate(state))
-                {
-                    state.ChangeState(RunState.Exit);
-                }
-            });
         }
         #region 검색식
         public static BNCaster Caster()
@@ -331,6 +316,10 @@ namespace skill
         {
             return new BFirst(targets);
         }
+        public static BNLambdaFilter HasStatus()
+        {
+            return new BNLambdaFilter((go) => !(go.GetComponent<Status>() is null));
+        }
         #endregion
         #region 추가식
         public static BExtend Extend(params IBaseTargets[] targeter)
@@ -407,52 +396,54 @@ namespace skill
         {
             return new BHContact(cond);
         }
+
+        public static BHTimer Timer(float time)
+        {
+            return new BHTimer(time);
+        }
+        #endregion
+        #region 제어식
+        public static BLoop Loop(int count, params IBase[] steps)
+        {
+            return new BLoop(Block(steps), count);
+        }
+
+        public static BUntil Until(IBaseInterrupt when, params IBase[] steps)
+        {
+            return new BUntil(when, Block(steps));
+        }
+        public static IBase Require()
+        {
+            return new BNWork((state) =>
+            {
+                if (state.targets.Count() < 1)
+                {
+                    state.ChangeState(RunState.Exit);
+                }
+            });
+        }
+        public static IBase Require(Predicate<State> predicate)
+        {
+            return new BNWork((state) =>
+            {
+                if (!predicate(state))
+                {
+                    state.ChangeState(RunState.Exit);
+                }
+            });
+        }
+        public static BWait Wait(IBaseInterrupt cond)
+        {
+            return new BWait(cond);
+        }
+        public static BWait Timeout(float time)
+        {
+            return new BWait(Timer(time));
+        }
         #endregion
     }
-    
-    public class BVirtualCrosshair : IBaseCrosshair
-    {
-        private IBaseLocation loc;
-        private IBaseDirection dir;
 
-        public BVirtualCrosshair(IBaseLocation loc, IBaseDirection dir)
-        {
-            this.loc = loc;
-            this.dir = dir;
-        }
-
-        public INodeCrosshair Build(State state)
-        {
-            return new NVirtualCrosshair(this.loc.Build(state), this.dir.Build(state));
-        }
-    }
-    public class NVirtualCrosshair : INodeCrosshair
-    {
-        private INodeLocation loc;
-        private INodeDirection dir;
-
-        public NVirtualCrosshair(INodeLocation loc, INodeDirection dir)
-        {
-            this.loc = loc;
-            this.dir = dir;
-        }
-
-        public Nullable<Quaternion> GetCameraDirection(State state)
-        {
-            return this.dir.GetDirection(state);
-        }
-
-        public Nullable<Vector3> GetCameraLocation(State state)
-        {
-            return this.loc.GetLocation(state);
-        }
-
-        public void Reset(State state)
-        {
-
-        }
-    }
-
+    #region 상태가 없는 노드
     public class BNCaster : IStateless, IBNLocation, IBNDirection, IBNCrosshair, IBNTarget, IBNTargets
     {
         INode IBase.Build(State state)
@@ -647,7 +638,6 @@ namespace skill
             return new BTargetLocDir(this);
         }
     }
-
     public class BNWork : IStateless
     {
         private Action<State> work;
@@ -670,7 +660,87 @@ namespace skill
         {
         }
     }
-    
+    public class BNColliderSphere : IStateless
+    {
+        private float radius;
+
+        public INode Build(State state)
+        {
+            return this;
+        }
+
+        public void Calling(State state)
+        {
+            SphereCollider sphere = null;
+            if (state.skill.ownColli is null)
+            {
+                sphere = state.skill.gameObject.AddComponent<SphereCollider>();
+                state.skill.ownColli = sphere;
+            }
+            else
+            {
+                if (state.skill.ownColli is SphereCollider)
+                {
+                    sphere = state.skill.ownColli as SphereCollider;
+                }
+                else
+                {
+                    GameObject.Destroy(state.skill.ownColli);
+                    sphere = state.skill.gameObject.AddComponent<SphereCollider>();
+                    state.skill.ownColli = sphere;
+                }
+            }
+            sphere.radius = radius;
+        }
+
+        public void Reset(State state)
+        {
+        }
+    }
+    #endregion
+    public class BVirtualCrosshair : IBaseCrosshair
+    {
+        private IBaseLocation loc;
+        private IBaseDirection dir;
+
+        public BVirtualCrosshair(IBaseLocation loc, IBaseDirection dir)
+        {
+            this.loc = loc;
+            this.dir = dir;
+        }
+
+        public INodeCrosshair Build(State state)
+        {
+            return new NVirtualCrosshair(this.loc.Build(state), this.dir.Build(state));
+        }
+    }
+    public class NVirtualCrosshair : INodeCrosshair
+    {
+        private INodeLocation loc;
+        private INodeDirection dir;
+
+        public NVirtualCrosshair(INodeLocation loc, INodeDirection dir)
+        {
+            this.loc = loc;
+            this.dir = dir;
+        }
+
+        public Nullable<Quaternion> GetCameraDirection(State state)
+        {
+            return this.dir.GetDirection(state);
+        }
+
+        public Nullable<Vector3> GetCameraLocation(State state)
+        {
+            return this.loc.GetLocation(state);
+        }
+
+        public void Reset(State state)
+        {
+
+        }
+    }
+
     public class BExtend : IBase, IBaseTargets
     {
         private List<IBaseTargets> targeters;
@@ -1134,6 +1204,63 @@ namespace skill
         }
     }
 
+    public class BForce : IBase
+    {
+        private IBaseTargets targets;
+        private IBaseDirection direction;
+        private float power;
+
+        public BForce(IBaseTargets targets, IBaseDirection direction, float power)
+        {
+            this.targets = targets;
+            this.direction = direction;
+            this.power = power;
+        }
+
+        public INode Build(State state)
+        {
+            return new NForce(targets.Build(state), direction.Build(state), power);
+        }
+    }
+    public class NForce : INode
+    {
+        private INodeTargets targets;
+        private INodeDirection direction;
+        private float power;
+
+        public NForce(INodeTargets targets, INodeDirection direction, float power)
+        {
+            this.targets = targets;
+            this.direction = direction;
+            this.power = power;
+        }
+
+        public void Calling(State state)
+        {
+            var ctrgs = targets.GetTargets(state);
+            var cdir = direction.GetDirection(state);
+            if (cdir.HasValue && !(ctrgs is null))
+            {
+
+                foreach (var item in ctrgs.Select((go) => go.GetComponent<Rigidbody>()).Where((go) => !(go is null)))
+                {
+
+                    item.AddForce(cdir.Value.eulerAngles * power, ForceMode.Impulse);
+                }
+            }
+            else
+            {
+                state.ChangeState(RunState.Fail);
+            }
+
+        }
+
+        public void Reset(State state)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class BDamage : IBase
     {
         private IBaseTargets targeter;
@@ -1309,6 +1436,8 @@ namespace skill
         }
 
     }
+
+
     public class BFirst : IBaseTarget, IFilter
     {
         private IBaseTargets targets;
@@ -1528,6 +1657,57 @@ namespace skill
         }
     }
 
+    public class BWait : IBase
+    {
+        private IBaseInterrupt condition;
+
+        public BWait(IBaseInterrupt condition)
+        {
+            this.condition = condition;
+        }
+
+        public INode Build(State state)
+        {
+            return new NWait(condition.Build(state, RunState.Run));
+        }
+    }
+    public class NWait : INode
+    {
+        private INodeInterrupt condition;
+        private bool isInstalled = false;
+
+        public NWait(INodeInterrupt condition)
+        {
+            this.condition = condition;
+        }
+
+        public void Calling(State state)
+        {
+            if (!isInstalled)
+            {
+                condition.Install(state);
+                isInstalled = true;
+                state.ChangeState(RunState.Wait);
+            }
+            else
+            {
+                if (!(state.runState is RunState.Run))
+                {
+                    return;
+                }
+            }
+        }
+
+        public void Reset(State state)
+        {
+            if (isInstalled)
+            {
+                condition.Uninstall(state);
+                isInstalled = false;
+            }
+        }
+    }
+
     public class BHContact : IBaseInterrupt
     {
         private IFilter filter;
@@ -1569,6 +1749,48 @@ namespace skill
             }
         }
     }
-    // public class HTimer { }
+    public class BHTimer : IBaseInterrupt
+    {
+        private float timer;
+
+        public BHTimer(float timer)
+        {
+            this.timer = timer;
+        }
+
+        public INodeInterrupt Build(State state, RunState targetState)
+        {
+            return new NHTimer(timer, targetState);
+        }
+    }
+    public class NHTimer : INodeInterrupt
+    {
+        private float timer;
+        private float startAt;
+        private RunState targetState;
+        public NHTimer(float timer, RunState targetState)
+        {
+            this.timer = timer;
+            this.targetState = targetState;
+        }
+
+        public void Install(State state)
+        {
+            startAt = state.runtime;
+            state.OnWaitUpdate += CheckTimeout;
+        }
+
+        public void Uninstall(State state)
+        {
+            state.OnWaitUpdate -= CheckTimeout;
+        }
+        public void CheckTimeout(State state)
+        {
+            if (state.runtime - startAt >= timer)
+            {
+                state.ChangeState(targetState);
+            }
+        }
+    }
     // public class HInterval { }
 }

@@ -18,9 +18,10 @@ public class Status : MonoBehaviour
         Stamina,
         Mana,
     }
+
+
     public Container<LiteralKey, string> Literals { get; private set; }
     public Container<NumericKey, float> Numerics { get; private set; }
-
     void Awake()
     {
         Literals = new Container<LiteralKey, string>();

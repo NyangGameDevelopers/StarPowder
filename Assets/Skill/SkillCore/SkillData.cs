@@ -8,6 +8,7 @@ public class SkillData : ScriptableObject
 
     public SkillIdentifier identifier;
     public string description;
+    public float cooltime;
     public skill.IBase spellBase { get { return SpellBuild(identifier); } }
     private IBase SpellBuild(SkillIdentifier name)
     {
