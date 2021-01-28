@@ -31,12 +31,6 @@ public partial class CharacterCore : MonoBehaviour
     {
         [Tooltip("구르기 끝난 직후로부터 재사용 쿨타임")]
         public float roll = 0.5f;
-        [Tooltip("전체 공격 쿨타임")]
-        public float attack = 1.5f;
-        [Tooltip("첫번째 공격 이후 두번째 공격을 하기 위한 대기시간")]
-        public float firstAttack = 0.3f;
-        [Tooltip("두번째 공격 이후 세번째 공격을 하기 위한 대기시간")]
-        public float secondAttack = 0.3f;
     }
     //[SerializeField, Tooltip("행동 쿨타임들")]
     private CooldownInfo _cooldown = new CooldownInfo();
@@ -51,10 +45,6 @@ public partial class CharacterCore : MonoBehaviour
     {
         [Tooltip("구르기 및 애니메이션 지속시간")]
         public float roll = 1.0f;
-        [Tooltip("두 번째 공격 모션 이어서 재생할 수 있는 허용 시간")]
-        public float secondAttackChance = 0.4f;
-        [Tooltip("세 번째 공격 모션 이어서 재생할 수 있는 허용 시간")]
-        public float thirdAttackChance = 0.4f;
     }
     //[SerializeField, Tooltip("지속시간(애니메이션 포함)")]
     private DurationInfo _duration = new DurationInfo();
@@ -78,12 +68,17 @@ public partial class CharacterCore : MonoBehaviour
         public string move = "MOVE";
         public string roll = "ROLL";
 
-        // 대검 (오른손)
-        public string oneHandIdle = "ONE_HAND_IDLE";
-        public string oneHandMove = "ONE_HAND_MOVE";
-        public string oneHandRoll = "ONE_HAND_ROLL";
+        // 오른손 도구를 들고 있는 경우
+        public string rightHandIdle = "RIGHT_HAND_IDLE";
+        public string rightHandMove = "RIGHT_HAND_MOVE";
+        public string rightHandRoll = "RIGHT_HAND_ROLL";
 
-        // 쌍검 (양손 각각)
+        // 양손 도구 들고 있는 경우
+        public string doubleHandIdle = "DOUBLE_HAND_IDLE";
+        public string doubleHandMove = "DOUBLE_HAND_MOVE";
+        public string doubleHandRoll = "DOUBLE_HAND_ROLL";
+
+        // 양손 각각 도구를 들고 있는 경우
         public string twoHandIdle = "TWO_HAND_IDLE";
         public string twoHandMove = "TWO_HAND_MOVE";
         public string twoHandRoll = "TWO_HAND_ROLL";
@@ -98,13 +93,29 @@ public partial class CharacterCore : MonoBehaviour
         public string emotion0 = "EMOTION_CLAP";
 
         //====================== Upper 레이어(상체) 애니메이션 ===================
-        public string oneHandAttack1 = "ONE_HAND_ATTACK_1"; // 오른손무기 첫번째 공격
-        public string oneHandAttack2 = "ONE_HAND_ATTACK_2"; // 오른손무기 두번째 공격
-        public string oneHandAttack3 = "ONE_HAND_ATTACK_3"; // 오른손무기 두번째 공격
+        public string[] rightHandAttacks = new string[]
+            {
+                "",
+                "RIGHT_HAND_ATTACK_1",
+                "RIGHT_HAND_ATTACK_2",
+                "RIGHT_HAND_ATTACK_3"
+            };
 
-        public string twoHandAttack1 = "TWO_HAND_ATTACK_1"; // 한손무기X2 첫번째 공격
-        public string twoHandAttack2 = "TWO_HAND_ATTACK_2"; // 한손무기X2 두번째 공격
-        public string twoHandAttack3 = "TWO_HAND_ATTACK_3"; // 한손무기X2 두번째 공격
+        public string[] doubleHandAttacks = new string[]
+            {
+                "",
+                "DOUBLE_HAND_ATTACK_1",
+                "DOUBLE_HAND_ATTACK_2",
+                "DOUBLE_HAND_ATTACK_3"
+            };
+
+        public string[] twoHandAttacks = new string[]
+            {
+                "",
+                "TWO_HAND_ATTACK_1",
+                "TWO_HAND_ATTACK_2",
+                "TWO_HAND_ATTACK_3"
+            };
     }
     //[SerializeField, Tooltip("연결된 애니메이터의 각 애니메이션 이름 정확히 등록")]
     private AnimationNameSet_ _animationNameSet = new AnimationNameSet_();

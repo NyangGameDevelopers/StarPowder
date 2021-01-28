@@ -39,10 +39,16 @@ public partial class CharacterCore : MonoBehaviour
 
     public enum BehaviorMode
     {
+        /// <summary> 빈 손 </summary>
         None,
-        Battle,
-        Witch,     // 마녀에요
-        OnVehicle, // 탑승 중
+        /// <summary> 도구 들고 있음 </summary>
+        Equip,
+        /// <summary> 빗자루 타는 중 </summary>
+        Witch,
+        /// <summary> 탑승 중 </summary>
+        OnVehicle,
+        // TODO : 건축
+        Build,
     }
 
     public enum AnimType
@@ -64,16 +70,3 @@ public partial class CharacterCore : MonoBehaviour
         Weapon,
     }
 }
-
-/***********************************************************************
-*                               Global Enums
-***********************************************************************/
-#region .
-/// <summary> 들고 있는 손 타입 </summary>
-public enum HandType
-{
-    OneHand, // 오른손에만 들고 있음
-    TwoHand  // 양 손에 하나씩 들고 있음
-}
-
-#endregion

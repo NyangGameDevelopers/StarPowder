@@ -30,8 +30,8 @@ public partial class CharacterCore : MonoBehaviour
     private bool CharacterIsWalking() => State.isWalking;
     private bool CharacterIsRunning() => State.isRunning;
 
-    private bool OnTotalAttackCooldown() => Current.attackCooldown > 0f;
-    private bool OnFirstAttackCooldown() => Current.firstAttackCooldown > 0f;
+    private bool OnTotalAttackCooldown() => Current.toolCooldown > 0f;
+    private bool OnToolCooldown() => Current.toolCooldown > 0f;
     private bool OnRollingCooldown() => Current.rollCooldown > 0f;
 
     private bool MoveKeyDown() =>
@@ -45,7 +45,8 @@ public partial class CharacterCore : MonoBehaviour
     private bool AttackKeyDown() => Input.GetMouseButtonDown((int)Key.attack);
 
 
-    private bool CharacterIsBattleMode() => State.behaviorMode.Equals(BehaviorMode.Battle);
+    private bool CharacterIsEquippedMode()
+        => State.behaviorMode.Equals(BehaviorMode.Equip) || State.behaviorMode.Equals(BehaviorMode.Witch);
     private bool CharacterIsWitchMode() => State.behaviorMode.Equals(BehaviorMode.Witch);
     private bool CharacterIsOnVehicleMode() => State.behaviorMode.Equals(BehaviorMode.OnVehicle);
 

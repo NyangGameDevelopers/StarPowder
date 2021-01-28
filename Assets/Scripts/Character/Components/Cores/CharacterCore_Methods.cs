@@ -37,19 +37,19 @@ public partial class CharacterCore : MonoBehaviour
         Anim = Character.GetComponent<Animator>();
 
         // 손꾸락
-        var rightHand = charRig.GetComponentInAllChildren<RightHandMark>();
-        RightHand = rightHand.gameObject;
-        var leftHand = charRig.GetComponentInAllChildren<LeftHandMark>();
-        LeftHand = leftHand.gameObject;
+        RightHand = charRig.GetComponentInAllChildren<RightHandMark>();
+        LeftHand = charRig.GetComponentInAllChildren<LeftHandMark>();
 
         var walkerRig = GetComponentInAllChildren<WalkerMark>();
         Walker = walkerRig.transform;
 
+        ToolBox = GetComponentInChildren<Temp_ToolBox>();
+
         // 캐릭터는 캐릭터 레이어 설정
         SetLayerRecursive(Character, Layers.CharacterLayer);
         // 무기는 기본 레이어 설정
-        SetLayerRecursive(LeftHand.transform, Layers.Default);
-        SetLayerRecursive(RightHand.transform, Layers.Default);
+        //SetLayerRecursive(LeftHand.transform, Layers.Default);
+        //SetLayerRecursive(RightHand.transform, Layers.Default);
 
         // Gets
         RBody = GetComponent<Rigidbody>();
@@ -99,14 +99,16 @@ public partial class CharacterCore : MonoBehaviour
         if (type.Equals(AnimType.Die))
             return AnimationName.die;
 
-        bool idle = type.Equals(AnimType.Idle);
-        bool moving = type.Equals(AnimType.Move);
+        bool idle    = type.Equals(AnimType.Idle);
+        bool moving  = type.Equals(AnimType.Move);
         bool rolling = type.Equals(AnimType.Roll);
-        bool binded = type.Equals(AnimType.Bind);
+        bool binded  = type.Equals(AnimType.Bind);
         bool stunned = type.Equals(AnimType.Stun);
 
-        bool oneHand = Current.handType.Equals(HandType.OneHand);
-        bool twoHand = Current.handType.Equals(HandType.TwoHand);
+        bool toolExisted = Current.tool != null;
+        bool rightHand  = toolExisted && Current.tool.handType.Equals(HandType.RightHand);
+        bool doubleHand = toolExisted && Current.tool.handType.Equals(HandType.DoubleHand);
+        bool twoHand    = toolExisted && Current.tool.handType.Equals(HandType.TwoHand);
 
         switch (State.behaviorMode)
         {
@@ -116,16 +118,20 @@ public partial class CharacterCore : MonoBehaviour
             case BehaviorMode.None when binded:  return AnimationName.bind;
             case BehaviorMode.None when stunned: return AnimationName.stun;
              
-            case BehaviorMode.Battle when oneHand && idle:    return AnimationName.oneHandIdle;
-            case BehaviorMode.Battle when oneHand && moving:  return AnimationName.oneHandMove;
-            case BehaviorMode.Battle when oneHand && rolling: return AnimationName.oneHandRoll;
+            case BehaviorMode.Equip when rightHand && idle:    return AnimationName.rightHandIdle;
+            case BehaviorMode.Equip when rightHand && moving:  return AnimationName.rightHandMove;
+            case BehaviorMode.Equip when rightHand && rolling: return AnimationName.rightHandRoll;
              
-            case BehaviorMode.Battle when twoHand && idle:    return AnimationName.twoHandIdle;
-            case BehaviorMode.Battle when twoHand && moving:  return AnimationName.twoHandMove;
-            case BehaviorMode.Battle when twoHand && rolling: return AnimationName.twoHandRoll;
+            case BehaviorMode.Equip when doubleHand && idle:    return AnimationName.doubleHandIdle;
+            case BehaviorMode.Equip when doubleHand && moving:  return AnimationName.doubleHandMove;
+            case BehaviorMode.Equip when doubleHand && rolling: return AnimationName.doubleHandRoll;
+             
+            case BehaviorMode.Equip when twoHand && idle:    return AnimationName.twoHandIdle;
+            case BehaviorMode.Equip when twoHand && moving:  return AnimationName.twoHandMove;
+            case BehaviorMode.Equip when twoHand && rolling: return AnimationName.twoHandRoll;
 
-            case BehaviorMode.Battle when binded:  return AnimationName.bind;
-            case BehaviorMode.Battle when stunned: return AnimationName.stun;
+            case BehaviorMode.Equip when binded:  return AnimationName.bind;
+            case BehaviorMode.Equip when stunned: return AnimationName.stun;
              
             // 마녀는 그냥 마녀만
             case BehaviorMode.Witch:    return AnimationName.witch;
@@ -140,15 +146,12 @@ public partial class CharacterCore : MonoBehaviour
     /// <summary> 현재 손 타입, 공격 인덱스(1, 2)에 따라 공격 애니메이션 이름 가져오기 </summary>
     public string GetAttackAnimation(int attackIndex)
     {
-        switch (Current.handType)
+        switch (Current.tool.handType)
         {
-            case HandType.OneHand when attackIndex == 1: return AnimationName.oneHandAttack1;
-            case HandType.OneHand when attackIndex == 2: return AnimationName.oneHandAttack2;
-            case HandType.OneHand when attackIndex == 3: return AnimationName.oneHandAttack3;
-
-            case HandType.TwoHand when attackIndex == 1: return AnimationName.twoHandAttack1;
-            case HandType.TwoHand when attackIndex == 2: return AnimationName.twoHandAttack2;
-            case HandType.TwoHand when attackIndex == 3: return AnimationName.twoHandAttack3;
+            // 오른손 한손무기
+            case HandType.RightHand:  return AnimationName.rightHandAttacks[attackIndex];
+            case HandType.DoubleHand: return AnimationName.doubleHandAttacks[attackIndex];
+            case HandType.TwoHand:    return AnimationName.twoHandAttacks[attackIndex];
         }
 
         Debug.Log("Methods_GetAttackAnimation : 잘못된 참조");
@@ -170,33 +173,50 @@ public partial class CharacterCore : MonoBehaviour
     private void SetWalkingState(bool value) => State.isWalking = value;
     private void SetRunningState(bool value) => State.isRunning = value;
 
+    private void SetToolCooldown(in float cooldown) => Current.toolCooldown = cooldown;
     private void SetCastDuration(in float duration) => Current.castDuration = duration;
 
     /// <summary> 행동모드 변경, 변경에 따른 양손 액티브 상태 조절 </summary>
     private void SetBehaviorMode(BehaviorMode mode)
     {
+        switch (mode)
+        {
+            case BehaviorMode.None:
+                if (Current.tool != null)
+                {
+                    ToolBox.TakeOff();
+                }
+                break;
+
+            case BehaviorMode.Equip:
+                if (ToolBox.CurrentTool != null)
+                {
+                    Current.tool = ToolBox.CurrentTool;
+                    ToolBox.PutOn(LeftHand, RightHand);
+
+                    // 마녀 빗자루일 경우 : 태우기
+                    if (Current.tool is Broom)
+                    {
+                        mode = BehaviorMode.Witch;
+                    }
+                }
+                else
+                {
+                    mode = BehaviorMode.None;
+                }
+                break;
+        }
+
         State.behaviorMode = mode;
 
         // 손 게임오브젝트 활성화 상태 변경
-        RightHand.SetActive(
-            mode.Equals(BehaviorMode.Battle) ||
+        RightHand.gameObject.SetActive(
+            mode.Equals(BehaviorMode.Equip) ||
             mode.Equals(BehaviorMode.Witch)
         );
-        LeftHand.SetActive(
-            mode.Equals(BehaviorMode.Battle)
+        LeftHand.gameObject.SetActive(
+            mode.Equals(BehaviorMode.Equip)
         );
-
-        // 사용 중인 도구 종류 갱신
-        switch (mode)
-        {
-            case BehaviorMode.Battle:
-                Current.toolType = ToolType.Weapon;
-                break;
-
-            default:
-                Current.toolType = ToolType.None;
-                break;
-        }
     }
 
     private void SetCursorVisibleState(bool value)
