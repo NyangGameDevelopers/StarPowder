@@ -12,7 +12,7 @@ public partial class CharacterCore : MonoBehaviour
     public CooldownInfo Cooldown => _cooldown;
     public DurationInfo Duration => _duration;
 
-    public KeyOption Key => _keyOption;
+    public Dictionary<UserAction, KeyCode> Binding => SettingCore.I.Binding.Bindings;
     public SpeedOption Speed => _speedOption;
     public MoveOption Move => _moveOption;
     public SpecialSkillOption Skill => _skillOption;
@@ -119,45 +119,6 @@ public partial class CharacterCore : MonoBehaviour
     }
     //[SerializeField, Tooltip("연결된 애니메이터의 각 애니메이션 이름 정확히 등록")]
     private AnimationNameSet_ _animationNameSet = new AnimationNameSet_();
-
-    #endregion
-    /***********************************************************************
-    *                               Key Options
-    ***********************************************************************/
-    #region .
-    [Serializable]
-    public class KeyOption
-    {
-        public KeyCode moveForward  = KeyCode.W;
-        public KeyCode moveBackward = KeyCode.S;
-        public KeyCode moveLeft  = KeyCode.A;
-        public KeyCode moveRight = KeyCode.D;
-
-        [Space]
-        public KeyCode run = KeyCode.LeftControl;
-        public KeyCode roll = KeyCode.LeftShift;
-        public KeyCode jump = KeyCode.Space;
-
-        [Space]
-        [Tooltip("마우스 커서 보이기/감추기 토글")]
-        public KeyCode showCursorToggle = KeyCode.LeftAlt;
-
-        [Tooltip("1인칭 / 3인칭 카메라 변경 토글")]
-        public KeyCode changeViewToggle = KeyCode.BackQuote;
-
-        [Space]
-        [Tooltip("일반모드 / 전투모드 변경")]
-        public KeyCode changeBehaviorMode = KeyCode.Tab;
-
-        [Space]
-        [Tooltip("공격!")]
-        public MouseButton attack = MouseButton.Left;
-
-        [Space]
-        public KeyCode rideOnVehicle = KeyCode.G; // 임시 : 탑승/해제
-    }
-    [SerializeField]
-    private KeyOption _keyOption = new KeyOption();
 
     #endregion
     /***********************************************************************

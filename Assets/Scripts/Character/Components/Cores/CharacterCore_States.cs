@@ -14,9 +14,6 @@ public partial class CharacterCore : MonoBehaviour
     [Serializable]
     public class CharacterState
     {
-        /// <summary> 일반 / 전투 모드 </summary>
-        public BehaviorMode behaviorMode = BehaviorMode.None;
-
         /// <summary> 죽었니 </summary>
         public bool isDead;
 
@@ -49,6 +46,9 @@ public partial class CharacterCore : MonoBehaviour
 
         /// <summary> 현재 커서가 보이는지 여부 </summary>
         public bool isCursorVisible;
+
+        /// <summary> 팬케이크 UI 사용중인지 여부 </summary>
+        public bool isUsingPancake;
     }
     [SerializeField]
     public CharacterState _state = new CharacterState();
@@ -66,6 +66,11 @@ public partial class CharacterCore : MonoBehaviour
         public float rollDuration;
         public float stunDuration;
         public float bindDuration;
+        public float changeModeDuration;
+
+
+        /// <summary> 일반 / 전투 모드 </summary>
+        public BehaviorMode behaviorMode = BehaviorMode.Normal;
 
         /// <summary> 지면으로부터의 거리 </summary>
         public float distFromGround;
@@ -85,8 +90,35 @@ public partial class CharacterCore : MonoBehaviour
         /// <summary> 현재 등록된 이동수단 </summary>
         public Vehicle vehicle;
 
-        /// <summary> 현재 장착한 도구 </summary>
-        public Tool tool;
+
+        /// <summary> 단순 참조용 : 현재 들고 있는 도구 </summary>
+        public Tool toolInHand
+        {
+            get
+            {
+                switch (behaviorMode)
+                {
+                    case BehaviorMode.Normal:
+                        return normalTool;
+
+                    case BehaviorMode.Battle:
+                        return battleWeapon;
+
+                    default:
+                        return null;
+                }
+            }
+        }
+
+        /// <summary> 노말 모드 도구 </summary>
+        public Tool normalTool;
+
+        /// <summary> 배틀 모드 무기 </summary>
+        public Tool battleWeapon;
+
+
+        /// <summary> V키 UI로 선택한 인덱스 </summary>
+        public int selctedPancakeIndex;
     }
     [SerializeField]
     private CurrentStateValues _currentStates = new CurrentStateValues();

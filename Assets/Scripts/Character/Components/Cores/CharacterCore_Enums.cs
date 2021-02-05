@@ -12,10 +12,6 @@ public partial class CharacterCore : MonoBehaviour
     /***********************************************************************
     *                        Core - Enum Definitions
     ***********************************************************************/
-    public enum MouseButton
-    {
-        Left, Right, Middle
-    }
 
     public enum CameraViewOption
     {
@@ -39,14 +35,14 @@ public partial class CharacterCore : MonoBehaviour
 
     public enum BehaviorMode
     {
-        /// <summary> 빈 손 </summary>
-        None,
-        /// <summary> 도구 들고 있음 </summary>
-        Equip,
-        /// <summary> 빗자루 타는 중 </summary>
-        Witch,
+        /// <summary> 평시 </summary>
+        Normal,
+        /// <summary> 전투모드 </summary>
+        Battle,
         /// <summary> 탑승 중 </summary>
         OnVehicle,
+        /// <summary> 빗자루 타는 중 </summary>
+        Witch,
         // TODO : 건축
         Build,
     }
@@ -61,12 +57,5 @@ public partial class CharacterCore : MonoBehaviour
         Stun,
         Die,
         Emotion,
-    }
-
-    /// <summary> 장착한 도구 타입 </summary>
-    public enum ToolType
-    {
-        None,
-        Weapon,
     }
 }

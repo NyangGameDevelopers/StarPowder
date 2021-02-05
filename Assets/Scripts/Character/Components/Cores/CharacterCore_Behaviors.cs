@@ -25,7 +25,144 @@ public partial class CharacterCore : MonoBehaviour
     #region .
     private void MakeBehaviorNodes()
     {
-        INode root =
+        _currentBehavior =
+            Parallel
+            (
+                // Updates
+                Action(DeclineCooldownDurationDeltatime),
+                Action(CheckDistanceFromGround),
+
+                // Input Actions
+                IfNotAction(CharacterIsOnVehicleMode, Input_ChangeCamView),
+                Action(Input_SetCursorVisibleState),
+                IfNotAction(CharacterIsUsingPancake, Input_RotatePlayer),
+                Action(Input_CalculateMoveDirection),
+                //Action(Input_CameraZoom),
+
+                Selector // Actions
+                (
+                    Condition(CharacterIsDead),
+                    Condition(CharacterIsStunned),
+                    Condition(CharacterIsRolling),
+
+                    #region Normal Mode Actions
+                    Condition(CharacterIsNormalMode)
+                    .Selector
+                    (
+                        // 도구 사용
+                        Sequence
+                        (
+                            Condition(CharacterIsHoldingTool),
+                            NotCondition(OnToolCooldown),
+                            NotCondition(CharacterIsJumping),
+                            IfAction(MouseLeftKeyDown, UseToolAndPlayAnimation)
+                        ),
+
+                        Condition(CharacterIsBinded),
+
+                        // 상태 변경, 도구 변경
+                        Sequence
+                        (
+                            NotCondition(OnToolCooldown),
+                            NotCondition(CharacterIsJumping),
+
+                            Selector
+                            (
+                                // 배틀모드로 변경
+                                IfAction(ChangeBehaviorModeKeyDown, ChangeToBattleMode),
+                                // 탑승
+                                IfAction(RidingKeyDown, ChangeToVehicleMode),
+
+                                // 팬케이크로 도구 변경
+                                IfAction(PancakeKeyDown, ShowPancakeUI),
+                                IfAction(PancakeKeyUp, HidePancakeUIAndChangeTool)
+                            )
+                        ),
+
+                        // 점프
+                        Sequence
+                        (
+                            NotCondition(OnToolCooldown),
+                            IfAction(JumpKeyDown, Jump),
+                            Action(ResetUpperAnimation),
+                            Action(PlayIdleAnimation)
+                        ),
+
+                        Action(MoveWASD)
+                    ),
+                    #endregion
+                    
+                    #region Battle Mode Actions
+                    Condition(CharacterIsBattleMode)
+                    .Selector
+                    (
+
+                        // 도구 사용
+                        Sequence
+                        (
+                            Condition(CharacterIsHoldingTool),
+                            NotCondition(OnToolCooldown),
+                            NotCondition(CharacterIsJumping),
+                            IfAction(MouseLeftKeyDown, UseToolAndPlayAnimation)
+                        ),
+
+                        Condition(CharacterIsBinded),
+
+                        // 상태 변경
+                        Sequence
+                        (
+                            NotCondition(OnToolCooldown),
+                            NotCondition(CharacterIsJumping),
+
+                            Selector
+                            (
+                                // 노말모드로 변경
+                                IfAction(ChangeBehaviorModeKeyDown, ChangeToNormalMode),
+                                // 탑승
+                                IfAction(RidingKeyDown, ChangeToVehicleMode)
+                            )
+                        ),
+
+                        // 점프
+                        Sequence
+                        (
+                            NotCondition(OnToolCooldown), // 도구 사용 쿨타임 중인 경우 점프 불가
+                            IfAction(JumpKeyDown, Jump),
+                            Action(ResetUpperAnimation),
+                            Action(PlayIdleAnimation)
+                        ),
+
+                        IfAction(RollKeyDown, RollWASD),
+                        Action(MoveWASD)
+                    ),
+                    #endregion
+                    
+                    #region OnVehicle Mode Actions
+                    Condition(CharacterIsOnVehicleMode)
+                    .Selector
+                    (
+                        Condition(CharacterIsBinded),
+                        IfAction(RidingKeyDown, ChangeToNormalMode),
+                        Action(MoveWASD)
+                    )
+                    #endregion
+                ),
+
+                Selector // Animations
+                (
+                    Condition(CharacterIsDead),
+                    IfAction(CharacterIsStunned, PlayResetAndStunAnimation),
+                    IfAction(CharacterIsBinded,  PlayBindAnimation),
+                    IfAction(CharacterIsRolling, PlayRollAnimation),
+                    IfAction(CharacterIsMovingOnGround, PlayMoveAnimation),
+                    Action(PlayIdleAnimation)
+                )
+            );
+    }
+    
+    private void OLD_MakeBehaviorNodes()
+    {
+        _currentBehavior =
             Parallel
             (
                 // Updates
@@ -41,22 +178,22 @@ public partial class CharacterCore : MonoBehaviour
                 Action(Input_CalculateMoveDirection),
 
                 // 임시 : 무기 변경 토글
-                IfAction(() => !OnToolCooldown() && 
-                                CharacterIsEquippedMode() && 
-                                Input.GetKeyDown(KeyCode.Z),
-                         () => {
-                             ToolBox.SwitchNextTool(LeftHand, RightHand);
-                             Current.tool = ToolBox.CurrentTool;
-                             SetBehaviorMode(BehaviorMode.Equip);
-                             }),
+                //IfAction(() => !OnToolCooldown() && 
+                //                CharacterIsEquippedMode() && 
+                //                Input.GetKeyDown(KeyCode.Z),
+                //         () => {
+                //             ToolBox.SwitchNextTool(LeftHand, RightHand);
+                //             Current.toolInHand = ToolBox.CurrentTool;
+                //             SetBehaviorMode(BehaviorMode.Battle);
+                //             }),
 
                 Sequence // 행동 모드 변경 : 일반 <-> 도구 사용 <-> 마녀
                 (
                     NotCondition(CharacterIsDead),
                     NotCondition(CharacterIsStunned),
-                    NotCondition(OnTotalAttackCooldown),
-                    NotCondition(CharacterIsOnVehicleMode),
-                    Action(Input_ChangeBehaviorMode)
+                    NotCondition(OnToolCooldown),
+                    NotCondition(CharacterIsOnVehicleMode)
+                    //Action(Input_ChangeBehaviorMode)
                 ),
 
                 Selector // Actions
@@ -70,9 +207,9 @@ public partial class CharacterCore : MonoBehaviour
                         (
                             Selector // 이런 액션을 취하면
                             (
-                                Condition(MoveKeyDown),
+                                Condition(AnyMoveKeysDown),
                                 Condition(JumpKeyDown),
-                                Condition(AttackKeyDown),
+                                Condition(MouseLeftKeyDown),
                                 Condition(RollKeyDown),
                                 
                                 Condition(CharacterIsDead),
@@ -92,7 +229,7 @@ public partial class CharacterCore : MonoBehaviour
                         NotCondition(OnToolCooldown), // 도구 사용 쿨타임 중인 경우 점프 불가
                         NotCondition(CharacterIsUnableToMove),
                         NotCondition(CharacterIsJumping),
-                        Condition(() => Input.GetKeyDown(Key.rideOnVehicle)),
+                        Condition(RidingKeyDown),
                         Action(ToggleVehicleState)
                     ),
 
@@ -105,9 +242,9 @@ public partial class CharacterCore : MonoBehaviour
                     // 도구 사용(무기 공격 포함)
                     Sequence
                     (
-                        Condition(CharacterIsEquippedMode),
+                        //Condition(CharacterIsEquippedMode),
                         Condition(CharacterIsGrounded),
-                        IfAction(AttackKeyDown, UseToolAndPlayAnimation)
+                        IfAction(MouseLeftKeyDown, UseToolAndPlayAnimation)
                     ),
 
                     Condition(CharacterIsBinded),
@@ -143,8 +280,6 @@ public partial class CharacterCore : MonoBehaviour
                     Action(PlayIdleAnimation)
                 )
             );
-
-        _currentBehavior = root;
     }
 
     #endregion
