@@ -30,11 +30,11 @@ MonoBehaviour:
     serializationDepthLimit: 64
     assemblyNames:
     - Assembly-CSharp
+    - Assembly-CSharp-firstpass
     - Boxophobic.Utils.Scripts
+    - LoadingScreen.Misc
     - Boxophobic.PolyverseSkies.Runtime
     - Boxophobic.PolyverseSkies.Scripts
-    - LoadingScreen.Misc
-    - Assembly-CSharp-firstpass
     - Boxophobic.Utils.Editor
     - Boxophobic.PolyverseSkies.Editor
     showAdvancedSettings: 0
