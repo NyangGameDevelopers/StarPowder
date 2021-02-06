@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Rito.BehaviorTree;
 
+using Extensions;
+
 // 날짜 : 2021-01-08 PM 9:23:05
 // 작성자 : Rito
 
@@ -109,6 +111,7 @@ public partial class CharacterCore : MonoBehaviour
         Decline(ref Current.rollDuration, deltaTime);
         Decline(ref Current.stunDuration, deltaTime);
         Decline(ref Current.bindDuration, deltaTime);
+        Decline(ref Current.changeModeDuration, deltaTime);
 
         // 3. Change States
         SetRollState(Current.rollDuration > 0f);
@@ -131,16 +134,16 @@ public partial class CharacterCore : MonoBehaviour
     {
         Vector3 ro = transform.position + Vector3.up;
         Vector3 rd = Vector3.down;
-        float d = 500f;
         Ray ray = new Ray(ro, rd);
+        float dist = 500f;
 
-        bool catched = 
-            //Physics.Raycast(ray, out var hit, d, Layers.GroundMask);
-            Physics.SphereCast(ray, 0.1f, out var hit, d, Layers.GroundMask);
+        const float radius = 0.1f;
+        bool catched =
+            //Physics.Raycast(ray, out var hit, dist, Layers.GroundMask);
+            Physics.SphereCast(ray, 0.1f, out var hit, dist, Layers.GroundMask);
 
-        Current.distFromGround = catched ? (hit.distance - 1f + 0.1f) : 9999f;
-
-        SetGroundState(Current.distFromGround < 0.1f);
+        Current.distFromGround = catched ? (hit.distance - 1f + radius) : float.MaxValue;
+        SetGroundState(Current.distFromGround < radius);
 
         // 부드러운 애니메이션을 위해 러프값 제공
         float goalValue = Mathf.Clamp(RBody.velocity.y, -1f, 1f);
@@ -155,6 +158,18 @@ public partial class CharacterCore : MonoBehaviour
 
         Debug.Mark(_debugUpdateActionCall);
     }
+
+    #endregion
+    /***********************************************************************
+    *                              Mode Chage Actions
+    ***********************************************************************/
+    #region .
+
+    private void ChangeToNormalMode() => SetBehaviorMode(BehaviorMode.Normal);
+    private void ChangeToBattleMode() => SetBehaviorMode(BehaviorMode.Battle);
+    private void ChangeToVehicleMode() => SetBehaviorMode(BehaviorMode.OnVehicle);
+    private void ChangeToBuildMode() => SetBehaviorMode(BehaviorMode.Build);
+
 
     #endregion
     /***********************************************************************
@@ -181,25 +196,6 @@ public partial class CharacterCore : MonoBehaviour
         if (!State.isDead) return; // 이미 생존
 
         SetDeadState(false);
-
-        Debug.Mark(_debugPlayerActionCall);
-    }
-
-    // [임시]
-    /// <summary> 캐릭터 모드 변경 토글</summary>
-    private void ChangeBehaviorToggle()
-    {
-        switch (State.behaviorMode)
-        {
-            case BehaviorMode.None:
-                SetBehaviorMode(BehaviorMode.Equip);
-                break;
-
-            case BehaviorMode.Equip:
-            case BehaviorMode.Witch:
-                SetBehaviorMode(BehaviorMode.None);
-                break;
-        }
 
         Debug.Mark(_debugPlayerActionCall);
     }
@@ -243,8 +239,6 @@ public partial class CharacterCore : MonoBehaviour
             CameraViewOption.ThirdPerson,
             CurrentIsFPCamera() // TP카메라였으면 카메라 회전 인계하지 않음
         );
-
-        SetBehaviorMode(BehaviorMode.OnVehicle);
     }
 
     /// <summary> 내려오기! </summary>
@@ -252,7 +246,7 @@ public partial class CharacterCore : MonoBehaviour
     {
         Current.vehicle.gameObject.SetActive(false);
         Character.localPosition = default;
-        SetBehaviorMode(BehaviorMode.None);
+        //SetBehaviorMode(BehaviorMode.Normal);
     }
 
     /// <summary> 도구 사용하고 애니메이션 재생 </summary>
@@ -261,14 +255,14 @@ public partial class CharacterCore : MonoBehaviour
         if (OnToolCooldown()) return;
         //Anim.SetFloat("Attack Speed", Speed.attackSpeed);
 
-        Current.tool.Act(out ToolActionResult result);
+        Current.toolInHand.Act(out ToolActionResult result);
 
         // 도구 사용 성공 시
         if (result.succeeded)
         {
             string animationName = "";
 
-            switch (Current.tool)
+            switch (Current.toolInHand)
             {
                 case Weapon weapon:
                     animationName = GetAttackAnimation(result.motionIndex);
@@ -387,26 +381,16 @@ public partial class CharacterCore : MonoBehaviour
     #endregion
 
     /***********************************************************************
-    *                            Input Actions
+    *                              Input Actions
     ***********************************************************************/
     #region .
 
     /// <summary> FP, TP 카메라 변경 </summary>
     private void Input_ChangeCamView()
     {
-        if (Input.GetKeyDown(Key.changeViewToggle))
+        if (ChangeCamViewKeyDown())
         {
             ToggleCameraView();
-
-            Debug.Mark(_debugInputActionCall);
-        }
-    }
-
-    private void Input_ChangeBehaviorMode()
-    {
-        if (Input.GetKeyDown(Key.changeBehaviorMode))
-        {
-            ChangeBehaviorToggle();
 
             Debug.Mark(_debugInputActionCall);
         }
@@ -416,7 +400,7 @@ public partial class CharacterCore : MonoBehaviour
     private void Input_SetCursorVisibleState()
     {
         // 1. 마우스 중앙버튼 유지하는 동안 커서 감추기
-        if (Input.GetMouseButtonDown(2))
+        if (MouseMiddleKeyDown())
         {
             _isMouseMiddlePressed = true;
             _prevCursorVisibleState = State.isCursorVisible;
@@ -428,7 +412,7 @@ public partial class CharacterCore : MonoBehaviour
 
             Debug.Mark(_debugInputActionCall);
         }
-        if (Input.GetMouseButtonUp(2))
+        if (MouseMiddleKeyUp())
         {
             _isMouseMiddlePressed = false;
 
@@ -441,7 +425,7 @@ public partial class CharacterCore : MonoBehaviour
         }
 
         // 2. Alt 눌러 커서 토글
-        if (!_isMouseMiddlePressed && Input.GetKeyDown(Key.showCursorToggle))
+        if (!_isMouseMiddlePressed && ShowCursorKeyDown())
         {
             State.isCursorVisible = !State.isCursorVisible;
             SetCursorVisibleState(State.isCursorVisible);
@@ -577,10 +561,10 @@ public partial class CharacterCore : MonoBehaviour
     {
         _moveDir = Vector3.zero;
 
-        if (Input.GetKey(Key.moveForward)) _moveDir += Vector3.forward;
-        if (Input.GetKey(Key.moveBackward)) _moveDir += Vector3.back;
-        if (Input.GetKey(Key.moveLeft)) _moveDir += Vector3.left;
-        if (Input.GetKey(Key.moveRight)) _moveDir += Vector3.right;
+        if (Binding[UserAction.MoveForward].GetKey())  _moveDir += Vector3.forward;
+        if (Binding[UserAction.MoveBackward].GetKey()) _moveDir += Vector3.back;
+        if (Binding[UserAction.MoveLeft].GetKey())  _moveDir += Vector3.left;
+        if (Binding[UserAction.MoveRight].GetKey()) _moveDir += Vector3.right;
 
         _moveDir.Normalize();
         Vector3 checkDir;
@@ -604,7 +588,7 @@ public partial class CharacterCore : MonoBehaviour
         checkDir = _worldMoveDir;
 #endif
 
-        bool isRunningKeyDown = Input.GetKey(Key.run);
+        bool isRunningKeyDown = Binding[UserAction.Run].GetKey();
         bool moving = _moveDir.magnitude > 0.1f && !CharacterIsRolling();
 
         SetMovingState(moving);
@@ -638,5 +622,46 @@ public partial class CharacterCore : MonoBehaviour
     private float animSpeedY = 0f;
     private float animSpeedZ = 0f;
 
-#endregion
+    #endregion
+
+    /***********************************************************************
+    *                               UI Actions
+    ***********************************************************************/
+    #region .
+    private void ShowPancakeUI()
+    {
+        State.isUsingPancake = true;
+        if (Cursor.lockState == CursorLockMode.Locked)
+            Cursor.lockState = CursorLockMode.Confined;
+
+        UICore.I.Pancake.Show();
+    }
+
+    private void HidePancakeUIAndChangeTool()
+    {
+        State.isUsingPancake = false;
+        if (Cursor.lockState == CursorLockMode.Confined)
+            Cursor.lockState = CursorLockMode.Locked;
+
+        int index = UICore.I.Pancake.FadeAndGetIndex();
+        Current.selctedPancakeIndex = index;
+
+        if (Current.normalTool)
+        {
+            Current.normalTool.TakeOff();
+        }
+
+        if (index == -1)
+        {
+            Current.normalTool = null;
+            return;
+        }
+        else
+        {
+            ToolBox.CurrentIndex = index;
+            Current.normalTool = ToolBox.CurrentTool.PutOn(LeftHand, RightHand);
+        }
+    }
+
+    #endregion
 }

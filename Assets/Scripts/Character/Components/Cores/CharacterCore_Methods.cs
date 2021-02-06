@@ -43,17 +43,21 @@ public partial class CharacterCore : MonoBehaviour
         var walkerRig = GetComponentInAllChildren<WalkerMark>();
         Walker = walkerRig.transform;
 
-        ToolBox = GetComponentInChildren<Temp_ToolBox>();
+        // 도구박스, 무기박스
+        ToolBox = GetComponentInChildren<ToolBox>();
+        WeaponBox = GetComponentInChildren<WeaponBox>();
+
+        // 임시 : 첫 번째 무기 착용
+        if (WeaponBox.Count > 0)
+        {
+            Current.battleWeapon = WeaponBox.CurrentWeapon;
+        }
 
         // 캐릭터는 캐릭터 레이어 설정
         SetLayerRecursive(Character, Layers.CharacterLayer);
-        // 무기는 기본 레이어 설정
-        //SetLayerRecursive(LeftHand.transform, Layers.Default);
-        //SetLayerRecursive(RightHand.transform, Layers.Default);
 
         // Gets
         RBody = GetComponent<Rigidbody>();
-
         FPCam = GetComponentInAllChildren<FirstPersonCamera>();
         TPCam = GetComponentInAllChildren<ThirdPersonCamera>();
         FPCam.Init();
@@ -84,7 +88,7 @@ public partial class CharacterCore : MonoBehaviour
         // 초기 설정들
         SetCameraView(Current.cameraView); // 초기 뷰 설정
         SetCameraAlone(); // 카메라 한개 빼고 전부 비활성화
-        SetBehaviorMode(BehaviorMode.None);
+        SetBehaviorMode(BehaviorMode.Normal);
     }
 
     #endregion
@@ -95,9 +99,10 @@ public partial class CharacterCore : MonoBehaviour
     /// <summary> 현재 모드에 따라 알맞은 애니메이션 이름 참조 </summary>
     public string GetAnimation(AnimType type)
     {
+        //Debug.Log($"GetAnimation - AnimType : {type}");
+
         // 죽음 : 공통으로 사망 애니메이션
-        if (type.Equals(AnimType.Die))
-            return AnimationName.die;
+        if (type.Equals(AnimType.Die)) return AnimationName.die;
 
         bool idle    = type.Equals(AnimType.Idle);
         bool moving  = type.Equals(AnimType.Move);
@@ -105,48 +110,45 @@ public partial class CharacterCore : MonoBehaviour
         bool binded  = type.Equals(AnimType.Bind);
         bool stunned = type.Equals(AnimType.Stun);
 
-        bool toolExisted = Current.tool != null;
-        bool rightHand  = toolExisted && Current.tool.handType.Equals(HandType.RightHand);
-        bool doubleHand = toolExisted && Current.tool.handType.Equals(HandType.DoubleHand);
-        bool twoHand    = toolExisted && Current.tool.handType.Equals(HandType.TwoHand);
+        // 상태에 따른 고정 애니메이션
+        if (Current.behaviorMode.Equals(BehaviorMode.Witch)) return AnimationName.witch;
+        if (Current.behaviorMode.Equals(BehaviorMode.OnVehicle)) return AnimationName.onVehicle;
 
-        switch (State.behaviorMode)
+        // 공통 애니메이션
+        if (stunned) return AnimationName.stun;
+        if (binded)  return AnimationName.bind;
+
+        // 맨손
+        if (Current.toolInHand == null)
         {
-            case BehaviorMode.None when idle:    return AnimationName.idle;
-            case BehaviorMode.None when moving:  return AnimationName.move;
-            case BehaviorMode.None when rolling: return AnimationName.roll;
-            case BehaviorMode.None when binded:  return AnimationName.bind;
-            case BehaviorMode.None when stunned: return AnimationName.stun;
-             
-            case BehaviorMode.Equip when rightHand && idle:    return AnimationName.rightHandIdle;
-            case BehaviorMode.Equip when rightHand && moving:  return AnimationName.rightHandMove;
-            case BehaviorMode.Equip when rightHand && rolling: return AnimationName.rightHandRoll;
-             
-            case BehaviorMode.Equip when doubleHand && idle:    return AnimationName.doubleHandIdle;
-            case BehaviorMode.Equip when doubleHand && moving:  return AnimationName.doubleHandMove;
-            case BehaviorMode.Equip when doubleHand && rolling: return AnimationName.doubleHandRoll;
-             
-            case BehaviorMode.Equip when twoHand && idle:    return AnimationName.twoHandIdle;
-            case BehaviorMode.Equip when twoHand && moving:  return AnimationName.twoHandMove;
-            case BehaviorMode.Equip when twoHand && rolling: return AnimationName.twoHandRoll;
-
-            case BehaviorMode.Equip when binded:  return AnimationName.bind;
-            case BehaviorMode.Equip when stunned: return AnimationName.stun;
-             
-            // 마녀는 그냥 마녀만
-            case BehaviorMode.Witch:    return AnimationName.witch;
-
-            // 탑승도 얌전히 앉아있기만
-            case BehaviorMode.OnVehicle: return AnimationName.onVehicle;
-
-            default: return AnimationName.none;
+            if (idle) return AnimationName.idle;
+            if (moving) return AnimationName.move;
+            if (rolling) return AnimationName.roll;
         }
+
+        // 도구 존재
+        switch (Current.toolInHand.handType)
+        {
+            case HandType.RightHand when idle:    return AnimationName.rightHandIdle;
+            case HandType.RightHand when moving:  return AnimationName.rightHandMove;
+            case HandType.RightHand when rolling: return AnimationName.rightHandRoll;
+
+            case HandType.DoubleHand when idle:    return AnimationName.doubleHandIdle;
+            case HandType.DoubleHand when moving:  return AnimationName.doubleHandMove;
+            case HandType.DoubleHand when rolling: return AnimationName.doubleHandRoll;
+
+            case HandType.TwoHand when idle:    return AnimationName.twoHandIdle;
+            case HandType.TwoHand when moving:  return AnimationName.twoHandMove;
+            case HandType.TwoHand when rolling: return AnimationName.twoHandRoll;
+        }
+
+        return AnimationName.none;
     }
 
     /// <summary> 현재 손 타입, 공격 인덱스(1, 2)에 따라 공격 애니메이션 이름 가져오기 </summary>
     public string GetAttackAnimation(int attackIndex)
     {
-        switch (Current.tool.handType)
+        switch (Current.toolInHand.handType)
         {
             // 오른손 한손무기
             case HandType.RightHand:  return AnimationName.rightHandAttacks[attackIndex];
@@ -179,44 +181,62 @@ public partial class CharacterCore : MonoBehaviour
     /// <summary> 행동모드 변경, 변경에 따른 양손 액티브 상태 조절 </summary>
     private void SetBehaviorMode(BehaviorMode mode)
     {
+        BehaviorMode prevMode = Current.behaviorMode;
+
         switch (mode)
         {
-            case BehaviorMode.None:
-                if (Current.tool != null)
+            case BehaviorMode.Normal:
+            case BehaviorMode.OnVehicle:
+                if (Current.battleWeapon)
                 {
-                    ToolBox.TakeOff();
+                    Current.battleWeapon.TakeOff();
                 }
+                if (Current.normalTool)
+                {
+                    Current.normalTool.PutOn(LeftHand, RightHand);
+                }
+
+                //if (prevMode.Equals(BehaviorMode.Battle))
+                //    PlayUpperAnimation("TAKE_OFF_WEAPON");
                 break;
 
-            case BehaviorMode.Equip:
-                if (ToolBox.CurrentTool != null)
+            case BehaviorMode.Battle:
+                if (Current.normalTool)
                 {
-                    Current.tool = ToolBox.CurrentTool;
-                    ToolBox.PutOn(LeftHand, RightHand);
+                    Current.normalTool.TakeOff();
+                }
+                if (Current.battleWeapon)
+                {
+                    Current.battleWeapon.PutOn(LeftHand, RightHand);
+                }
 
-                    // 마녀 빗자루일 경우 : 태우기
-                    if (Current.tool is Broom)
-                    {
-                        mode = BehaviorMode.Witch;
-                    }
-                }
-                else
-                {
-                    mode = BehaviorMode.None;
-                }
+                if (prevMode.Equals(BehaviorMode.Normal))
+                    PlayUpperAnimation("PUT_ON_WEAPON");
+
+                Current.changeModeDuration = 0.5f;
                 break;
         }
 
-        State.behaviorMode = mode;
+        if (mode.Equals(BehaviorMode.OnVehicle))
+        {
+            RideOnVehicle();
+        }
+
+        if (prevMode.Equals(BehaviorMode.OnVehicle))
+        {
+            GetOffVehicle();
+        }
+
+        Current.behaviorMode = mode;
 
         // 손 게임오브젝트 활성화 상태 변경
-        RightHand.gameObject.SetActive(
-            mode.Equals(BehaviorMode.Equip) ||
-            mode.Equals(BehaviorMode.Witch)
-        );
-        LeftHand.gameObject.SetActive(
-            mode.Equals(BehaviorMode.Equip)
-        );
+        //RightHand.gameObject.SetActive(
+        //    mode.Equals(BehaviorMode.Battle) ||
+        //    mode.Equals(BehaviorMode.Witch)
+        //);
+        //LeftHand.gameObject.SetActive(
+        //    mode.Equals(BehaviorMode.Battle)
+        //);
     }
 
     private void SetCursorVisibleState(bool value)
@@ -268,6 +288,9 @@ public partial class CharacterCore : MonoBehaviour
 
 #endif
         }
+
+        // 태그 변경 : Camera.main으로 참조하기 위해
+        _currentCam.tag = "MainCamera";
     }
 
     /// <summary> 대상 게임오브젝트 및 모든 자식까지 재귀적으로 레이어 설정 </summary>

@@ -74,6 +74,8 @@ public partial class CharacterCore : MonoBehaviour
     // 캐릭터(워커 아래)
     public Transform Character { get; private set; }
 
-    public Temp_ToolBox ToolBox { get; private set; }
+    public ToolBox ToolBox { get; private set; }
+    public WeaponBox WeaponBox { get; private set; }
+
     #endregion
 }
