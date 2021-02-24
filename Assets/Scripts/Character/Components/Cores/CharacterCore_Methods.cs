@@ -31,7 +31,11 @@ public partial class CharacterCore : MonoBehaviour
 
     private void InitializeComponents()
     {
-        // Rigs (중요)
+        PbMove = GetComponent<Rito.FpsTpsCharacter.PhysicsBasedMovement>();
+        if(PbMove == null)
+            PbMove = gameObject.AddComponent<Rito.FpsTpsCharacter.PhysicsBasedMovement>();
+
+        // Marks (중요)
         var charRig = GetComponentInChildren<CharacterMark>(); // 활성화된 캐릭터만 찾기
         Character = charRig.transform;
         Anim = Character.GetComponent<Animator>();
@@ -39,9 +43,6 @@ public partial class CharacterCore : MonoBehaviour
         // 손꾸락
         RightHand = charRig.GetComponentInAllChildren<RightHandMark>();
         LeftHand = charRig.GetComponentInAllChildren<LeftHandMark>();
-
-        var walkerRig = GetComponentInAllChildren<WalkerMark>();
-        Walker = walkerRig.transform;
 
         // 도구박스, 무기박스
         ToolBox = GetComponentInChildren<ToolBox>();
@@ -63,6 +64,12 @@ public partial class CharacterCore : MonoBehaviour
         FPCam.Init();
         TPCam.Init();
 
+        // Root, Rigs
+        FpRig = FPCam.transform.parent;
+        Walker = FpRig.transform.parent;
+        TpRig = TPCam.transform.parent;
+        TpRoot = TpRig.transform.parent;
+
         Current.vehicle = GetComponentInAllChildren<Vehicle>();
         GetOffVehicle(); // 일단 자동차 비활성화
 
@@ -82,7 +89,6 @@ public partial class CharacterCore : MonoBehaviour
 
         // Camera
         Vector3 camToRig = TPCam.Rig.position - TPCam.transform.position;
-        _tpCamToRigDir = TPCam.transform.InverseTransformDirection(camToRig).normalized;
         _tpCamZoomInitialDistance = Vector3.Magnitude(camToRig);
 
         // 초기 설정들
@@ -172,7 +178,6 @@ public partial class CharacterCore : MonoBehaviour
     private void SetGroundState(bool value) => State.isGrounded = value;
     private void SetRollState(bool value) => State.isRolling = value;
     private void SetMovingState(bool value) => State.isMoving = value;
-    private void SetWalkingState(bool value) => State.isWalking = value;
     private void SetRunningState(bool value) => State.isRunning = value;
 
     private void SetToolCooldown(in float cooldown) => Current.toolCooldown = cooldown;
@@ -265,28 +270,15 @@ public partial class CharacterCore : MonoBehaviour
         if (isFP)
         {
             _currentCam = FPCam;
-            _currentCamOption = FPCamOption;
-#if !OLDCAM
-            // TP의 회전 인계
-            if (inheritRotation)
-            {
-                Walker.eulerAngles = TPCam.Rig.eulerAngles;
-            }
-#endif
+            Walker.localEulerAngles = Vector3.up * TpRoot.localEulerAngles.y;
+            FpRig.localEulerAngles = Vector3.right * TpRig.localEulerAngles.x;
         }
         // FP -> TP
         else
         {
             _currentCam = TPCam;
-            _currentCamOption = TPCamOption;
-#if !OLDCAM
-            // FP의 회전 인계
-            if (inheritRotation)
-            {
-                TPCam.Rig.eulerAngles = Walker.eulerAngles;
-            }
-
-#endif
+            TpRoot.localEulerAngles = Vector3.up * Walker.localEulerAngles.y;
+            TpRig.localEulerAngles = Vector3.right * FpRig.localEulerAngles.x;
         }
 
         // 태그 변경 : Camera.main으로 참조하기 위해
@@ -388,45 +380,6 @@ public partial class CharacterCore : MonoBehaviour
     *                            Checker Methods
     ***********************************************************************/
 #region .
-
-
-    /// <summary> 이동 방향 코앞에 벽이 있는지 검사 </summary>
-    private bool CheckAdjecentToWall(in Vector3 dir, in float originHeight)
-    {
-        if (dir.magnitude < 0.1f)
-        {
-            return false;
-        }
-
-        Vector3 ro = transform.position + Vector3.up * originHeight;
-        Vector3[] rds = {
-            dir,
-            Quaternion.Euler(0f, 18f, 0f) * dir,
-            Quaternion.Euler(0f, 35f, 0f) * dir,
-            Quaternion.Euler(0f, -18f, 0f) * dir,
-            Quaternion.Euler(0f, -35f, 0f) * dir
-        };
-        float d = 0.4f;
-
-        foreach (var rd in rds)
-        {
-            Ray ray = new Ray(ro, rd);
-            bool found = Physics.Raycast(ray, out var hit, d, Layers.GroundMask);
-
-            if (found)
-            {
-                Vector3 normal = hit.normal;
-                float dot = Mathf.Abs(Vector3.Dot(normal, Vector3.up));
-
-                if (dot < 0.05f)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
 
     #endregion
     /***********************************************************************

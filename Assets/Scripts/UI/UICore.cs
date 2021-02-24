@@ -15,6 +15,7 @@ public class UICore : Rito.SingletonMonoBehavior<UICore>
     ***********************************************************************/
     #region .
 
+    [field: Header("Left Top Gauges")]
     [field: SerializeField]
     public GaugeUI HpGauge { get; private set; }
 
@@ -24,6 +25,12 @@ public class UICore : Rito.SingletonMonoBehavior<UICore>
     [field: SerializeField]
     public ExpGaugeUI ExpGauge { get; private set; }
 
+
+    [field: Header("Left Top Gauges")]
+    [field: SerializeField]
+    public ClockwiseTimerUI[] StateTimers { get; private set; }
+
+    [field: Header("Center Pancake")]
     [field: SerializeField]
     public PancakeUI Pancake { get; private set; }
 
@@ -39,15 +46,5 @@ public class UICore : Rito.SingletonMonoBehavior<UICore>
         base.Awake();
     }
 
-    //private void Update()
-    //{
-    //    if (Input.GetKeyDown(KeyCode.V))
-    //        Pancake.Show();
-
-    //    if (Input.GetKeyUp(KeyCode.V))
-    //        Pancake.FadeAndGetIndex();
-
-    //    _pancakeIndexText.text = $"{Pancake._selectedIndex}";
-    //}
     #endregion
 }

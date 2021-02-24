@@ -30,13 +30,12 @@ public partial class CharacterCore : MonoBehaviour
             (
                 // Updates
                 Action(DeclineCooldownDurationDeltatime),
-                Action(CheckDistanceFromGround),
 
                 // Input Actions
                 IfNotAction(CharacterIsOnVehicleMode, Input_ChangeCamView),
                 Action(Input_SetCursorVisibleState),
                 IfNotAction(CharacterIsUsingPancake, Input_RotatePlayer),
-                Action(Input_CalculateMoveDirection),
+                Action(Input_CalculatePhysics),
                 //Action(Input_CameraZoom),
 
                 Selector // Actions
@@ -96,7 +95,6 @@ public partial class CharacterCore : MonoBehaviour
                     Condition(CharacterIsBattleMode)
                     .Selector
                     (
-
                         // 도구 사용
                         Sequence
                         (
@@ -167,7 +165,6 @@ public partial class CharacterCore : MonoBehaviour
             (
                 // Updates
                 Action(DeclineCooldownDurationDeltatime),
-                Action(CheckDistanceFromGround),
 
                 // Input Actions
                  // 탑승 모드에서는 3인칭 뷰만 지원
@@ -175,7 +172,7 @@ public partial class CharacterCore : MonoBehaviour
                 Action(Input_SetCursorVisibleState),
                 Action(Input_RotatePlayer),
                 Action(Input_CameraZoom),
-                Action(Input_CalculateMoveDirection),
+                Action(Input_CalculatePhysics),
 
                 // 임시 : 무기 변경 토글
                 //IfAction(() => !OnToolCooldown() && 

@@ -35,9 +35,6 @@ public partial class CharacterCore : MonoBehaviour
         /// <summary> 캐릭터가 걷거나 뛰고 있는지 여부 </summary>
         public bool isMoving;
 
-        /// <summary> 캐릭터가 걷고 있는지 여부 </summary>
-        public bool isWalking;
-
         /// <summary> 캐릭터가 뛰고 있는지 여부 </summary>
         public bool isRunning;
 
@@ -72,14 +69,8 @@ public partial class CharacterCore : MonoBehaviour
         /// <summary> 일반 / 전투 모드 </summary>
         public BehaviorMode behaviorMode = BehaviorMode.Normal;
 
-        /// <summary> 지면으로부터의 거리 </summary>
-        public float distFromGround;
-
         /// <summary> 근접공격 애니메이션 재생할 차례 </summary>
         public int attackMotionIndex = 0;
-
-        /// <summary> 더블점프를 썼는지 여부 </summary>
-        public bool doubleJumped;
 
         /// <summary> 현재 캐릭터 이동 방향 </summary>
         public MoveDirection moveDirection = MoveDirection.None;

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Rito.CustomAttributes;
 
 // 날짜 : 2021-02-05 PM 4:54:39
 // 작성자 : Rito
@@ -10,25 +11,34 @@ using UnityEngine.UI;
 /// <summary> V키 누르면 나오는 화면 중앙 UI </summary>
 public class PancakeUI : MonoBehaviour
 {
-    [SerializeField] private Image _centerImage;
-    [SerializeField] private Image[] _pieceImages;
-    [SerializeField] private Transform _arrowHolderTran;
+    [Header("Options")]
+    public int _pieceCount = 8;
 
-    private RectTransform[] _pieceRects;
-
-    private int _pieceLen;
-    private Vector2[] _pieceDirections;
-    private float _arrowHolderZRotation;
-
-    [SerializeField]
-    public int _selectedIndex = -1; // PRIVATE
-    
-    [Space]
-    [Range(0.3f, 2f)]
-    public float _apparenceDuration = .5f; // 등장에 걸리는 시간
+    [Range(0.2f, 1f)]
+    public float _apparenceDelay = .3f; // 등장에 걸리는 시간
 
     public float _pieceDist = 180f; // 중앙으로부터 각 조각의 거리
-    public float _centerDistThreshold = 0.05f; // 중앙에서부터의 마우스 거리 기준
+
+    [Range(0.01f, 0.5f)]
+    public float _centerDistThreshold = 0.1f; // 중앙에서부터의 마우스 거리 기준
+
+    public bool _showCenterPiece;
+
+    [Header("Objects")]
+    [SerializeField] private GameObject _pieceSample;
+    [SerializeField] private Transform _arrowHolderTran;
+
+    private Sprite _sampleSprite; // 각 조각 스프라이트가 없는 경우 대비
+    private Image _centerImage;
+    private Image[] _pieceImages;
+    private RectTransform[] _pieceRects;
+
+    private Vector2[] _pieceDirections;
+    private float _arrowHolderZRotation;
+    [SerializeField, Readonly, Header("Debug")]
+    private int _selectedIndex = -1;
+
+    
 
     private static readonly Color ColorSelected = new Color(1f, 1f, 1f, 1f);
     private static readonly Color ColorNotSelected = new Color(1f, 1f, 1f, 0.3f);
@@ -40,6 +50,7 @@ public class PancakeUI : MonoBehaviour
 
     private void Awake()
     {
+        InitPieces();
         InitComponents();
         Init();
         HideAll();
@@ -50,17 +61,47 @@ public class PancakeUI : MonoBehaviour
     *                               Private Methods
     ***********************************************************************/
     #region .
+    /// <summary> 조각 샘플 복제하여 조각들 생성 </summary>
+    private void InitPieces()
+    {
+        _pieceSample.SetActive(true);
+
+        _pieceImages = new Image[_pieceCount];
+
+        for (int i = 0; i <= _pieceCount; i++)
+        {
+            var clone = Instantiate(_pieceSample, transform);
+            Transform cloneChild = clone.transform.GetChild(0);
+
+            if (i == _pieceCount)
+            {
+                clone.name = "Piece Center";
+                cloneChild.TryGetComponent(out _centerImage);
+            }
+            else
+            {
+                clone.name = $"Piece {i}";
+                cloneChild.TryGetComponent(out _pieceImages[i]);
+            }
+        }
+
+        _pieceSample.SetActive(false);
+        _sampleSprite = _pieceSample.GetComponent<Image>().sprite;
+
+        _centerImage.gameObject.SetActive(_showCenterPiece);
+    }
+
     private void InitComponents()
     {
-        _pieceLen = _pieceImages.Length;
+        _pieceCount = _pieceImages.Length;
 
         _centerImage.color = ColorNotSelected;
 
-        _pieceRects = new RectTransform[_pieceLen];
-        for (int i = 0; i < _pieceLen; i++)
+        _pieceRects = new RectTransform[_pieceCount];
+        for (int i = 0; i < _pieceCount; i++)
         {
             // Init Rects
-            _pieceImages[i].TryGetComponent(out _pieceRects[i]);
+            _pieceImages[i].transform.parent.TryGetComponent(out _pieceRects[i]);
 
             // Init Colors
             _pieceImages[i].color = ColorNotSelected;
@@ -69,11 +110,11 @@ public class PancakeUI : MonoBehaviour
     private void Init()
     {
         // init pieces dirs
-        _pieceDirections = new Vector2[_pieceLen];
+        _pieceDirections = new Vector2[_pieceCount];
 
-        float piCoef = Mathf.PI * 2f / _pieceLen;
+        float piCoef = Mathf.PI * 2f / _pieceCount;
 
-        for (int i = 0; i < _pieceLen; i++)
+        for (int i = 0; i < _pieceCount; i++)
         {
             float deg = -piCoef * i + Mathf.PI * 0.5f;
 
@@ -93,7 +134,7 @@ public class PancakeUI : MonoBehaviour
     private void ResetAllColors()
     {
         _centerImage.color = ColorNotSelected;
-        for (int i = 0; i < _pieceLen; i++)
+        for (int i = 0; i < _pieceCount; i++)
         {
             _pieceImages[i].color = ColorNotSelected;
         }
@@ -142,6 +183,27 @@ public class PancakeUI : MonoBehaviour
         return _selectedIndex;
     }
 
+    /// <summary> 팬케이크 사라지면서 인덱스 리턴 </summary>
+    public int Hide() => FadeAndGetIndex();
+
+    /// <summary> 각각 피스 이미지(스프라이트) 등록 </summary>
+    public void SetPieceImageSprites(Sprite[] sprites)
+    {
+        int i = 0;
+        int sLen = sprites.Length;
+        for (; i < _pieceCount; i++)
+        {
+            if (i < sLen && sprites[i] != null)
+            {
+                _pieceImages[i].sprite = sprites[i];
+            }
+            else
+            {
+                _pieceImages[i].sprite = _sampleSprite;
+            }
+        }
+    }
+
     #endregion
     /***********************************************************************
     *                               Coroutines
@@ -152,12 +214,12 @@ public class PancakeUI : MonoBehaviour
         // 1. Appear
         float t = 0;
 
-        while (t < _apparenceDuration)
+        while (t < _apparenceDelay)
         {
-            for (int i = 0; i < _pieceLen; i++)
+            for (int i = 0; i < _pieceCount; i++)
             {
                 _pieceRects[i].anchoredPosition
-                     = _pieceDirections[i] * t * _pieceDist / _apparenceDuration;
+                     = _pieceDirections[i] * t * _pieceDist / _apparenceDelay;
             }
 
             t += Time.deltaTime;
@@ -197,8 +259,8 @@ public class PancakeUI : MonoBehaviour
                 showArrow = true;
 
                 // Calculate Array Index
-                mDeg *= 0.5f * _pieceLen / Mathf.PI;
-                _selectedIndex = Mathf.RoundToInt(mDeg) % 5;
+                mDeg *= 0.5f * _pieceCount / Mathf.PI;
+                _selectedIndex = Mathf.RoundToInt(mDeg) % _pieceCount;
             }
 
             SetSelectedPieceColors();

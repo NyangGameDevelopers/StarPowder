@@ -19,8 +19,7 @@ public partial class CharacterCore : MonoBehaviour
 
     public AnimationNameSet_ AnimationName => _animationNameSet;
 
-    public FirstPersonCameraOption FPCamOption => _firstPersonCameraOption;
-    public ThirdPersonCameraOption TPCamOption => _thirdPersonCameraOption;
+    public CameraOption CamOption => _cameraOption;
 
     /***********************************************************************
     *                               Cooldowns
@@ -64,8 +63,8 @@ public partial class CharacterCore : MonoBehaviour
         public string die  = "DIE";
 
         // 평시
-        public string idle = "IDLE";
-        public string move = "MOVE";
+        public string idle = "IDLE_MOVE";//"IDLE";
+        public string move = "IDLE_MOVE";//"MOVE";
         public string roll = "ROLL";
 
         // 오른손 도구를 들고 있는 경우
@@ -162,8 +161,8 @@ public partial class CharacterCore : MonoBehaviour
     ***********************************************************************/
     #region .
 
-    // 상속용
-    public abstract class CameraOption
+    [Serializable]
+    public class CameraOption
     {
         [Range(1f, 20f), Space, Tooltip("카메라 상하좌우 회전 속도")]
         public float rotationSpeed = 2f;
@@ -171,20 +170,7 @@ public partial class CharacterCore : MonoBehaviour
         public float lookUpDegree = -60f;
         [Range(0f, 75f), Tooltip("내려다보기 제한 각도")]
         public float lookDownDegree = 75f;
-    }
 
-    [Serializable]
-    public class FirstPersonCameraOption : CameraOption
-    {
-        ///// <summary> 리깅된 머리 트랜스폼 연결 </summary>
-        //public Transform headTran; // 직접 조작 안됨
-    }
-    [SerializeField]
-    private FirstPersonCameraOption _firstPersonCameraOption = new FirstPersonCameraOption();
-
-    [Serializable]
-    public class ThirdPersonCameraOption : CameraOption
-    {
         [Range(0f, 3.5f), Space, Tooltip("줌 확대 최대 거리")]
         public float zoomInDistance = 3f;
         [Range(0f, 5f), Tooltip("줌 축소 최대 거리")]
@@ -193,7 +179,7 @@ public partial class CharacterCore : MonoBehaviour
         public float zoomSpeed = 5f;
     }
     [SerializeField]
-    private ThirdPersonCameraOption _thirdPersonCameraOption = new ThirdPersonCameraOption();
+    private CameraOption _cameraOption = new CameraOption();
 
     #endregion
     /***********************************************************************

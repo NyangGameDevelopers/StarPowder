@@ -2303,7 +2303,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4966775059733337130}
   - component: {fileID: 4966775059733337129}
-  - component: {fileID: 4966775059733337128}
   - component: {fileID: 4966775059733337131}
   m_Layer: 0
   m_Name: Set_Witch
@@ -2349,20 +2348,6 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!136 &4966775059733337128
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4966775059733337133}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.3
-  m_Height: 1
-  m_Direction: 1
-  m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!114 &4966775059733337131
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4971,7 +4956,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4966775059931746640}
   m_Layer: 9
-  m_Name: TP Camera Rig
+  m_Name: TP Root
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4984,14 +4969,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4966775059931746643}
-  m_LocalRotation: {x: 0.38267705, y: 0, z: 0, w: 0.92387956}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 4966775060144381902}
+  - {fileID: 2509792057056202947}
   m_Father: {fileID: 4966775060868278423}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 45, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4966775059937205985
 GameObject:
   m_ObjectHideFlags: 0
@@ -5974,7 +5959,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4966775060001238565}
   - component: {fileID: 4966775060001238561}
-  - component: {fileID: 4966775060001238560}
   - component: {fileID: 4966775060001238563}
   - component: {fileID: 4966775060001238562}
   m_Layer: 0
@@ -6031,20 +6015,6 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!136 &4966775060001238560
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4966775060001238564}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.3
-  m_Height: 1
-  m_Direction: 1
-  m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!114 &4966775060001238563
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7888,11 +7858,11 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4966775060144381937}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -4}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -3.9999888}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 4966775059931746640}
+  m_Father: {fileID: 2509792057056202947}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &4966775060144381901
@@ -9904,7 +9874,6 @@ GameObject:
   - component: {fileID: 4966775060322594024}
   - component: {fileID: 4966775060322594023}
   - component: {fileID: 4966775060322594022}
-  - component: {fileID: 4966775060322594025}
   m_Layer: 0
   m_Name: Set_Axe
   m_TagString: Untagged
@@ -9961,20 +9930,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 630f3ae0fece1bc4bbe1a19eb2bc542e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!136 &4966775060322594025
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4966775060322594027}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.3
-  m_Height: 1
-  m_Direction: 1
-  m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!1 &4966775060324555334
 GameObject:
   m_ObjectHideFlags: 0
@@ -16083,7 +16038,9 @@ GameObject:
   m_Component:
   - component: {fileID: 4966775060868278423}
   - component: {fileID: 4966775060868278422}
+  - component: {fileID: 9125608703046351218}
   - component: {fileID: 4966775060868278425}
+  - component: {fileID: 4536485493481362143}
   m_Layer: 9
   m_Name: Player Character Compilation
   m_TagString: Untagged
@@ -16123,6 +16080,20 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!136 &9125608703046351218
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4966775060868278424}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.2
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!114 &4966775060868278425
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16146,11 +16117,7 @@ MonoBehaviour:
   _moveOption:
     rollDistance: 3
     jumpForce: 5.5
-  _firstPersonCameraOption:
-    rotationSpeed: 2
-    lookUpDegree: -60
-    lookDownDegree: 75
-  _thirdPersonCameraOption:
+  _cameraOption:
     rotationSpeed: 2
     lookUpDegree: -60
     lookDownDegree: 75
@@ -16168,7 +16135,6 @@ MonoBehaviour:
     isAdjcentToWall: 0
     isRolling: 0
     isMoving: 0
-    isWalking: 0
     isRunning: 0
     isAttacking: 0
     isCursorVisible: 0
@@ -16182,15 +16148,70 @@ MonoBehaviour:
     bindDuration: 0
     changeModeDuration: 0
     behaviorMode: 0
-    distFromGround: 0
     attackMotionIndex: 0
-    doubleJumped: 0
     moveDirection: 0
     cameraView: 1
     vehicle: {fileID: 0}
     normalTool: {fileID: 0}
     battleWeapon: {fileID: 0}
     selctedPancakeIndex: 0
+--- !u!114 &4536485493481362143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4966775060868278424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55012eb37f512ae418c8713f00d31131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _components:
+    capsule: {fileID: 0}
+    rBody: {fileID: 0}
+    subCapsule: {fileID: 0}
+    subRBody: {fileID: 0}
+  _checkOptions:
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    groundCheckDistance: 2
+    forwardCheckDistance: 0.1
+  _moveOptions:
+    speed: 3
+    runningCoef: 1.5
+    jumpForce: 5.5
+    jumpCooldown: 0.6
+    maxJumpCount: 1
+    maxSlopeAngle: 50
+    slopeAccel: 1
+  _currentStates:
+    isMoving: 0
+    isRunning: 0
+    isGrounded: 0
+    isOnSteepSlope: 0
+    isJumpTriggered: 0
+    isJumping: 0
+    isForwardBlocked: 0
+  _currentValues:
+    worldMoveDir: {x: 0, y: 0, z: 0}
+    groundNormal: {x: 0, y: 0, z: 0}
+    groundCross: {x: 0, y: 0, z: 0}
+    finalVelocity: {x: 0, y: 0, z: 0}
+    jumpCooldown: 0
+    jumpCount: 0
+    groundDistance: 0
+    groundSlopeAngle: 0
+    groundVerticalSlopeAngle: 0
+    forwardSlopeAngle: 0
+    slopeAccel: 0
+    gravity: 0
+  _debugOn: 0
+  _debugIndex: 0
+  _gizmoRadius: 0.1
+  _showGUI: 0
+  _guiTextSize: 28
 --- !u!1 &4966775060890888222
 GameObject:
   m_ObjectHideFlags: 0
@@ -20200,7 +20221,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4966775061216606298}
   - component: {fileID: 4966775061216606297}
-  - component: {fileID: 4966775061216606296}
   - component: {fileID: 4966775061216606299}
   m_Layer: 0
   m_Name: Set_Dagger
@@ -20245,20 +20265,6 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!136 &4966775061216606296
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4966775061216606301}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.3
-  m_Height: 1
-  m_Direction: 1
-  m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!114 &4966775061216606299
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25753,6 +25759,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56f0874664f2ab444a2108415265cf6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &6870837063166264661
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2509792057056202947}
+  m_Layer: 9
+  m_Name: TP Rig
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2509792057056202947
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6870837063166264661}
+  m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 4966775060144381902}
+  m_Father: {fileID: 4966775059931746640}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 45, y: 0, z: 0}
 --- !u!1 &7200680519878780651
 GameObject:
   m_ObjectHideFlags: 0

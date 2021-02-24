@@ -26,9 +26,6 @@ public partial class CharacterCore : MonoBehaviour
     private Vector3 _moveDir;
     private Vector3 _worldMoveDir;
 
-    /// <summary> TP 카메라 -> Rig 방향 벡터 </summary>
-    private Vector3 _tpCamToRigDir;
-
     /// <summary> TP 카메라 ~ Rig 초기 거리 </summary>
     private float _tpCamZoomInitialDistance;
 
@@ -48,15 +45,13 @@ public partial class CharacterCore : MonoBehaviour
     /// <summary> 현재 선택된 카메라 </summary>
     private PersonalCamera _currentCam;
 
-    /// <summary> 현재 선택된 카메라의 옵션 </summary>
-    private CameraOption _currentCamOption;
-
     #endregion
 
     /***********************************************************************
     *                               Components
     ***********************************************************************/
     #region .
+    public Rito.FpsTpsCharacter.PhysicsBasedMovement PbMove { get; private set; }
     public Rigidbody RBody { get; private set; }
     public Animator Anim { get; private set; }
 
@@ -68,8 +63,15 @@ public partial class CharacterCore : MonoBehaviour
     /// <summary> 자식으로 도구를 장착할 왼손 위치 </summary>
     public LeftHandMark LeftHand { get; private set; }
 
-    // 워커(캐릭터, 탑승물 FP카메라의 부모) 트랜스폼
+    /// <summary> 1인칭 좌우회전 </summary>
     public Transform Walker { get; private set; }
+    /// <summary> 1인칭 상하회전 </summary>
+    public Transform FpRig { get; private set; }
+
+    /// <summary> 3인칭 좌우회전 </summary>
+    public Transform TpRoot { get; private set; }
+    /// <summary> 3인칭 상하회전 </summary>
+    public Transform TpRig { get; private set; }
 
     // 캐릭터(워커 아래)
     public Transform Character { get; private set; }

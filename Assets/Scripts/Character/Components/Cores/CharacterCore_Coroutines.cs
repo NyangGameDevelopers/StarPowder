@@ -25,7 +25,7 @@ public partial class CharacterCore : MonoBehaviour
         if (CurrentIsTPCamera())
         {
             Anim.SetFloat("Roll Z", 1.0f);
-            localDir = TPCam.Rig.TransformDirection(rollDir);
+            localDir = TpRoot.TransformDirection(rollDir);
             var rot = Quaternion.LookRotation(localDir, Vector3.up).eulerAngles;
             Walker.localEulerAngles = Vector3.up * rot.y;
         }
@@ -47,14 +47,16 @@ public partial class CharacterCore : MonoBehaviour
         {
             float x = Current.rollDuration / Duration.roll;
             //x = Mathf.Sqrt(Mathf.Pow(x, 3f));
-            Vector3 next = localDir * Speed.moveSpeed * Move.rollDistance * x;
+            Vector3 next = localDir * Speed.moveSpeed * Move.rollDistance * x * 0.2f;
 
-            RBody.velocity =
-                new Vector3(next.x, RBody.velocity.y, next.z);
+            //RBody.velocity =
+            //    new Vector3(next.x, RBody.velocity.y, next.z);
+
+            PbMove.SetMovement(next, false);
 
             yield return null;
         }
-        RBody.velocity = new Vector3(0f, RBody.velocity.y, 0f);
+        //RBody.velocity = new Vector3(0f, RBody.velocity.y, 0f);
     }
 
     /// <summary> 현재 진행 중인 캐스팅 </summary>
@@ -101,12 +103,12 @@ public partial class CharacterCore : MonoBehaviour
                     if (_tpCameraWheelInput < -0.01f) break;
 
                     float deltaTime = Time.deltaTime;
-                    float zoom = deltaTime * TPCamOption.zoomSpeed;
+                    float zoom = deltaTime * CamOption.zoomSpeed;
                     float currentCamToRigDist = Vector3.Distance(tpCamTr.position, tpCamRig.position);
 
-                    if (_tpCamZoomInitialDistance - currentCamToRigDist < TPCamOption.zoomInDistance)
+                    if (_tpCamZoomInitialDistance - currentCamToRigDist < CamOption.zoomInDistance)
                     {
-                        tpCamTr.Translate(_tpCamToRigDir * zoom, Space.Self);
+                        tpCamTr.Translate(Vector3.forward * zoom, Space.Self);
                     }
 
                     f += deltaTime;
@@ -124,12 +126,12 @@ public partial class CharacterCore : MonoBehaviour
                     if (_tpCameraWheelInput > 0.01f) break;
 
                     float deltaTime = Time.deltaTime;
-                    float zoom = deltaTime * TPCamOption.zoomSpeed;
+                    float zoom = deltaTime * CamOption.zoomSpeed;
                     float currentCamToRigDist = Vector3.Distance(tpCamTr.position, tpCamRig.position);
 
-                    if (currentCamToRigDist - _tpCamZoomInitialDistance < TPCamOption.zoomOutDistance)
+                    if (currentCamToRigDist - _tpCamZoomInitialDistance < CamOption.zoomOutDistance)
                     {
-                        tpCamTr.Translate(-_tpCamToRigDir * zoom, Space.Self);
+                        tpCamTr.Translate(Vector3.back * zoom, Space.Self);
                     }
 
                     f += deltaTime;

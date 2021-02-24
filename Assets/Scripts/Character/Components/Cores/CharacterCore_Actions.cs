@@ -129,36 +129,6 @@ public partial class CharacterCore : MonoBehaviour
         Debug.Mark(_debugUpdateActionCall);
     }
 
-    /// <summary> 땅으로부터의 거리 체크 </summary>
-    private void CheckDistanceFromGround()
-    {
-        Vector3 ro = transform.position + Vector3.up;
-        Vector3 rd = Vector3.down;
-        Ray ray = new Ray(ro, rd);
-        float dist = 500f;
-
-        const float radius = 0.1f;
-        bool catched =
-            //Physics.Raycast(ray, out var hit, dist, Layers.GroundMask);
-            Physics.SphereCast(ray, 0.1f, out var hit, dist, Layers.GroundMask);
-
-        Current.distFromGround = catched ? (hit.distance - 1f + radius) : float.MaxValue;
-        SetGroundState(Current.distFromGround < radius);
-
-        // 부드러운 애니메이션을 위해 러프값 제공
-        float goalValue = Mathf.Clamp(RBody.velocity.y, -1f, 1f);
-        animSpeedY = Mathf.Lerp(animSpeedY, goalValue, 0.05f);
-
-        Anim.SetFloat("Move Y", animSpeedY);
-
-        if (State.isGrounded)
-        {
-            Current.doubleJumped = false;
-        }
-
-        Debug.Mark(_debugUpdateActionCall);
-    }
-
     #endregion
     /***********************************************************************
     *                              Mode Chage Actions
@@ -283,21 +253,14 @@ public partial class CharacterCore : MonoBehaviour
     private void MoveWASD()
     {
         // WASD 입력이 없는 경우, 이동 불가 상태
-        if (_moveDir.magnitude < 0.1f || CharacterIsUnableToMove())
+        if (!State.isMoving || CharacterIsUnableToMove())
         {
-            if (State.isGrounded)
-            {
-                RBody.velocity = default;
-                RBody.useGravity = false;
-            }
-            else
-            {
-                RBody.useGravity = true;
-            }
-            return;
+            _worldMoveDir = Vector3.zero;
         }
-
-        RBody.useGravity = true;
+        else
+        {
+            UpdateMoveDirection(_moveDir);
+        }
 
         float moveSpeed;
         float speedMultiplier;
@@ -312,26 +275,7 @@ public partial class CharacterCore : MonoBehaviour
             speedMultiplier = Speed.runSpeedMultiplier;
         }
 
-        Vector3 next = _worldMoveDir * moveSpeed * 
-            (State.isRunning ? speedMultiplier : 1f);
-
-        RBody.velocity = new Vector3(next.x, RBody.velocity.y, next.z);
-        UpdateMoveDirection(_moveDir);
-
-        // 캐릭터 회전
-#if !OLDCAM
-        if (CurrentIsTPCamera())
-        {
-            Vector3 dir = TPCam.Rig.TransformDirection(_moveDir);
-            float currentY = Walker.localEulerAngles.y;
-            float nextY = Quaternion.LookRotation(dir, Vector3.up).eulerAngles.y;
-
-            if (nextY - currentY > 180f) nextY -= 360f;
-            else if (currentY - nextY > 180f) nextY += 360f;
-
-            Walker.eulerAngles = Vector3.up * Mathf.Lerp(currentY, nextY, 0.05f);
-        }
-#endif
+        PbMove.SetMovement(_worldMoveDir, State.isRunning);
 
         Debug.Mark(_debugPlayerActionCall);
     }
@@ -358,22 +302,7 @@ public partial class CharacterCore : MonoBehaviour
     /// <summary> 점프하기 </summary>
     private void Jump()
     {
-        // 공중에 떠있는 상태
-        if (!State.isGrounded)
-        {
-            if (!Skill.doubleJump) return;
-
-            // 더블 점프 스킬 보유, 더블 점프 아직 안함
-            if (!Current.doubleJumped) Current.doubleJumped = true;
-            else return;
-        }
-
-        // 더블점프 시 도움닫기용 속도 초기화
-        if (Current.doubleJumped)
-        {
-            RBody.velocity = default;
-        }
-        RBody.AddForce(Vector3.up * Move.jumpForce, ForceMode.VelocityChange);
+        PbMove.SetJump();
 
         Debug.Mark(_debugPlayerActionCall);
     }
@@ -437,114 +366,65 @@ public partial class CharacterCore : MonoBehaviour
     /// <summary> 마우스를 상하/좌우로 움직여서 회전 </summary>
     private void Input_RotatePlayer()
     {
-        if (CurrentIsFPCamera()) RotateFP();
-        else RotateTP();
-    }
+        Transform root, rig;
 
-    private void RotateFP()
-    {
-        Transform fpCamRig = FPCam.Rig; // Rig : 상하 회전
-        Transform walker = Walker;  // Walker : 좌우 회전
+        // 1인칭
+        if (CurrentIsFPCamera())
+        {
+            root = Walker;
+            rig = FpRig;
+        }
+        // 3인칭
+        else
+        {
+            root = TpRoot;
+            rig = TpRig;
+            RotateWalker(); // 3인칭일 경우 Walker를 이동방향으로 회전
+        }
 
-        // ================================================
-        // 상하 : 카메라 Rig 회전
-        float vDegree = -Input.GetAxisRaw("Mouse Y");
-        float xRotPrev = fpCamRig.localEulerAngles.x;
-        float xRotNext = xRotPrev
-            + vDegree
-            * _currentCamOption.rotationSpeed
-            * Time.deltaTime * 50f;
+        if (State.isCursorVisible) return;
+
+        // 회전 ==========================================================
+        float deltaCoef = Time.deltaTime * 50f;
+        Vector2 rotation = new Vector2(Input.GetAxisRaw("Mouse X"), -Input.GetAxisRaw("Mouse Y"));
+
+        // 상하 : Rig 회전
+        float xRotPrev = rig.localEulerAngles.x;
+        float xRotNext = xRotPrev + rotation.y
+            * CamOption.rotationSpeed * deltaCoef;
 
         if (xRotNext > 180f)
             xRotNext -= 360f;
 
-        // ================================================
-        // 좌우 : 워커 회전
-        float hDegree = Input.GetAxisRaw("Mouse X");
-        float yRotPrev = walker.localEulerAngles.y;
-        float yRotAdd =
-            hDegree
-            * _currentCamOption.rotationSpeed
-            * Time.deltaTime * 50f;
-        float yRotNext = yRotAdd + yRotPrev;
+        // 좌우 : Root 회전
+        float yRotPrev = root.localEulerAngles.y;
+        float yRotNext =
+            yRotPrev + rotation.x
+            * CamOption.rotationSpeed * deltaCoef;
 
         // 상하 회전 가능 여부
         bool xRotatable =
-            _currentCamOption.lookUpDegree < xRotNext &&
-            _currentCamOption.lookDownDegree > xRotNext;
-
-        // 좌우 회전 가능 여부
-        bool yRotatable = !CharacterIsUnableToMove();
+            CamOption.lookUpDegree < xRotNext &&
+            CamOption.lookDownDegree > xRotNext;
 
         // Rig 상하 회전 적용
-        fpCamRig.localEulerAngles = Vector3.right * (xRotatable ? xRotNext : xRotPrev);
+        rig.localEulerAngles = Vector3.right * (xRotatable ? xRotNext : xRotPrev);
 
-        // 워커 좌우 회전 적용
-        if (yRotatable)
-        {
-            walker.localEulerAngles = Vector3.up * yRotNext;
-        }
+        // Root 좌우 회전 적용
+        root.localEulerAngles = Vector3.up * yRotNext;
     }
-
-    float cur;
-    private void RotateTP()
+    private void RotateWalker()
     {
-        if (State.isCursorVisible && !_isMouseMiddlePressed)
-            return;
+        if (State.isMoving == false) return;
 
-        Transform tpCamRig = TPCam.Rig;
+        Vector3 dir = TpRig.TransformDirection(_moveDir);
+        float currentY = Walker.localEulerAngles.y;
+        float nextY = Quaternion.LookRotation(dir, Vector3.up).eulerAngles.y;
 
-        // ================================================
-        // 상하 : 카메라 Rig 회전
-        float vDegree = -Input.GetAxisRaw("Mouse Y");
-        float xRotPrev = tpCamRig.localEulerAngles.x;
-        float xRotNext = xRotPrev
-            + vDegree
-            * _currentCamOption.rotationSpeed
-            * Time.deltaTime * 50f;
+        if (nextY - currentY > 180f) nextY -= 360f;
+        else if (currentY - nextY > 180f) nextY += 360f;
 
-        if (xRotNext > 180f)
-            xRotNext -= 360f;
-
-        // ================================================
-        // 좌우 : 카메라 Rig 회전
-        float hDegree = Input.GetAxisRaw("Mouse X");
-#if !OLDCAM
-        float yRotPrev = tpCamRig.localEulerAngles.y;
-#else
-        float yRotPrev = Walker.localEulerAngles.y;
-#endif
-
-        float yRotAdd =
-            hDegree
-            * _currentCamOption.rotationSpeed
-            * Time.deltaTime * 50f;
-        float yRotNext = yRotAdd + yRotPrev;
-
-        // 상하 회전 가능 여부 판정
-        bool xRotatable =
-            _currentCamOption.lookUpDegree < xRotNext &&
-            _currentCamOption.lookDownDegree > xRotNext;
-
-        Vector3 nextRot = new Vector3
-        (
-            xRotatable ? xRotNext : xRotPrev,
-#if OLDCAM
-            !CharacterIsUnableToMove() ? yRotNext : yRotPrev,
-#else
-            yRotNext,
-#endif
-            0f
-        );
-
-        // Rig 상하좌우 회전 적용
-        tpCamRig.localEulerAngles = nextRot;
-
-#if OLDCAM
-        // 워커 좌우 회전 적용
-        if(!CharacterIsUnableToMove())
-            Walker.localEulerAngles = Vector3.up * yRotNext;
-#endif
+        Walker.eulerAngles = Vector3.up * Mathf.Lerp(currentY, nextY, 0.1f);
     }
 
     /// <summary> TP Cam : 마우스 휠 굴려서 확대/축소 </summary>
@@ -557,63 +437,56 @@ public partial class CharacterCore : MonoBehaviour
     }
 
     /// <summary> WASD, LShift 입력으로 이동 벡터, 이동 상태 정의 </summary>
-    private void Input_CalculateMoveDirection()
+    private void Input_CalculatePhysics()
     {
-        _moveDir = Vector3.zero;
+        float h = 0f, v = 0f;
 
-        if (Binding[UserAction.MoveForward].GetKey())  _moveDir += Vector3.forward;
-        if (Binding[UserAction.MoveBackward].GetKey()) _moveDir += Vector3.back;
-        if (Binding[UserAction.MoveLeft].GetKey())  _moveDir += Vector3.left;
-        if (Binding[UserAction.MoveRight].GetKey()) _moveDir += Vector3.right;
+        if (Binding[UserAction.MoveForward].GetKey())  v += 1f;
+        if (Binding[UserAction.MoveBackward].GetKey()) v -= 1f;
+        if (Binding[UserAction.MoveLeft].GetKey())  h -= 1f;
+        if (Binding[UserAction.MoveRight].GetKey()) h += 1f;;
 
+        _moveDir = new Vector3(h, 0f, v);
         _moveDir.Normalize();
-        Vector3 checkDir;
+
         Vector3 animDir; // 애니메이션 적용할 기준 방향벡터
 
-#if !OLDCAM
         if (CurrentIsTPCamera())
         {
-            _worldMoveDir = TPCam.Rig.TransformDirection(_moveDir);
+            _worldMoveDir = TpRoot.TransformDirection(_moveDir);
             animDir = Walker.InverseTransformDirection(_worldMoveDir);
-            checkDir = Walker.forward;
         }
         else
         {
             _worldMoveDir = Walker.TransformDirection(_moveDir);
             animDir = _moveDir;
-            checkDir = _worldMoveDir;
         }
-#else
-        _worldMoveDir = Walker.TransformDirection(_moveDir);
-        checkDir = _worldMoveDir;
-#endif
 
-        bool isRunningKeyDown = Binding[UserAction.Run].GetKey();
-        bool moving = _moveDir.magnitude > 0.1f && !CharacterIsRolling();
+        State.isMoving = _moveDir.magnitude > 0.1f && !CharacterIsRolling();
+        State.isRunning = Binding[UserAction.Run].GetKey();
+        State.isGrounded = PbMove.IsGrounded;
 
-        SetMovingState(moving);
-        SetWalkingState(moving && !isRunningKeyDown);
-        SetRunningState(moving && isRunningKeyDown);
+        // 부드러운 애니메이션을 위해 러프값 제공
+        float goalValue = Mathf.Clamp(RBody.velocity.y, -1f, 1f);
 
         // 애니메이션 파라미터 설정
-        float mul = State.isWalking ? 0.5f : 1f;
+        float mul = State.isMoving ? (State.isRunning ? 1f : 0.5f) : 0f;
         animSpeedX = Mathf.Lerp(animSpeedX, animDir.x * mul, 0.05f);
         animSpeedZ = Mathf.Lerp(animSpeedZ, animDir.z * mul, 0.05f);
+        animSpeedY = Mathf.Lerp(animSpeedY, goalValue, 0.05f);
 
-        Anim.SetFloat("Move X", animSpeedX);
-        Anim.SetFloat("Move Z", animSpeedZ);
-
-
-        // 벽 매미 현상 방지
-        State.isAdjcentToWall =
-            CheckAdjecentToWall(checkDir, 0.05f) ||
-            CheckAdjecentToWall(checkDir, 0.5f) ||
-            CheckAdjecentToWall(checkDir, 0.95f);
-
-        if (State.isAdjcentToWall)
+        if (State.isGrounded)
         {
-            _worldMoveDir = default;
+            Anim.SetFloat("Move X", animSpeedX);
+            Anim.SetFloat("Move Z", animSpeedZ);
         }
+        else
+        {
+            Anim.SetFloat("Move X", 0f);
+            Anim.SetFloat("Move Z", 0f);
+        }
+
+        Anim.SetFloat("Move Y", animSpeedY);
 
         if (_moveDir.magnitude > 0.1f)
             Debug.Mark(_debugInputActionCall);

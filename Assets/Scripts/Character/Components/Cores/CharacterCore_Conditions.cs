@@ -28,7 +28,6 @@ public partial class CharacterCore : MonoBehaviour
     private bool CharacterIsRolling() => State.isRolling;
     private bool CharacterIsMoving() => State.isMoving;
     private bool CharacterIsMovingOnGround() => State.isMoving && State.isGrounded;
-    private bool CharacterIsWalking() => State.isWalking;
     private bool CharacterIsRunning() => State.isRunning;
     private bool CharacterIsUsingPancake() => State.isUsingPancake;
 
