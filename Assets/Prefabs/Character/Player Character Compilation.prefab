@@ -16170,22 +16170,22 @@ MonoBehaviour:
   _components:
     capsule: {fileID: 0}
     rBody: {fileID: 0}
-    subCapsule: {fileID: 0}
-    subRBody: {fileID: 0}
   _checkOptions:
     groundLayerMask:
       serializedVersion: 2
       m_Bits: 4294967295
-    groundCheckDistance: 2
     forwardCheckDistance: 0.1
+    groundCheckDistance: 2
+    groundCheckThreshold: 0.01
   _moveOptions:
     speed: 3
     runningCoef: 1.5
-    jumpForce: 5.5
+    jumpForce: 4.5
     jumpCooldown: 0.6
     maxJumpCount: 1
     maxSlopeAngle: 50
     slopeAccel: 1
+    gravity: -9.81
   _currentStates:
     isMoving: 0
     isRunning: 0
@@ -16194,13 +16194,15 @@ MonoBehaviour:
     isJumpTriggered: 0
     isJumping: 0
     isForwardBlocked: 0
+    isOutOfControl: 0
   _currentValues:
     worldMoveDir: {x: 0, y: 0, z: 0}
     groundNormal: {x: 0, y: 0, z: 0}
     groundCross: {x: 0, y: 0, z: 0}
-    finalVelocity: {x: 0, y: 0, z: 0}
+    horizontalVelocity: {x: 0, y: 0, z: 0}
     jumpCooldown: 0
     jumpCount: 0
+    outOfControllDuration: 0
     groundDistance: 0
     groundSlopeAngle: 0
     groundVerticalSlopeAngle: 0
@@ -16209,6 +16211,7 @@ MonoBehaviour:
     gravity: 0
   _debugOn: 0
   _debugIndex: 0
+  _showGizmos: 1
   _gizmoRadius: 0.1
   _showGUI: 0
   _guiTextSize: 28

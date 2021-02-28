@@ -51,7 +51,7 @@ public partial class CharacterCore : MonoBehaviour
     *                               Components
     ***********************************************************************/
     #region .
-    public Rito.FpsTpsCharacter.PhysicsBasedMovement PbMove { get; private set; }
+    public Rito.CharacterControl.IMovement3D PbMove { get; private set; }
     public Rigidbody RBody { get; private set; }
     public Animator Anim { get; private set; }
 

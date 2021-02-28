@@ -464,7 +464,7 @@ public partial class CharacterCore : MonoBehaviour
 
         State.isMoving = _moveDir.magnitude > 0.1f && !CharacterIsRolling();
         State.isRunning = Binding[UserAction.Run].GetKey();
-        State.isGrounded = PbMove.IsGrounded;
+        State.isGrounded = PbMove.IsGrounded();
 
         // 부드러운 애니메이션을 위해 러프값 제공
         float goalValue = Mathf.Clamp(RBody.velocity.y, -1f, 1f);

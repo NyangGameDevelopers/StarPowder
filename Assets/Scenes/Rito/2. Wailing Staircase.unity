@@ -203,7 +203,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &56485507 stripped
 Transform:
@@ -302,7 +302,7 @@ Transform:
   m_LocalScale: {x: 4, y: 4, z: 4}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &167840363 stripped
 Transform:
@@ -326,7 +326,7 @@ PrefabInstance:
     - target: {fileID: 6687850213371423446, guid: 4cbd4692ee9adb142aec7fccfb0d208f,
         type: 3}
       propertyPath: m_RootOrder
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6687850213371423446, guid: 4cbd4692ee9adb142aec7fccfb0d208f,
         type: 3}
@@ -489,7 +489,7 @@ Transform:
   m_LocalScale: {x: 2, y: 1, z: 2}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1439467653
 GameObject:
@@ -581,7 +581,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!4 &1517443207 stripped
 Transform:
@@ -639,7 +639,7 @@ PrefabInstance:
     - target: {fileID: 1970817254336300875, guid: 84e3c46cf5947444b842572ddee78e83,
         type: 3}
       propertyPath: m_RootOrder
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 1970817254336300875, guid: 84e3c46cf5947444b842572ddee78e83,
         type: 3}
@@ -700,62 +700,62 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 8860809261799644832, guid: eb3363e881fa40c448b1d0364e4d84bd,
+    - target: {fileID: 4966775060868278423, guid: eb3363e881fa40c448b1d0364e4d84bd,
         type: 3}
       propertyPath: m_RootOrder
-      value: 7
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8860809261799644832, guid: eb3363e881fa40c448b1d0364e4d84bd,
+    - target: {fileID: 4966775060868278423, guid: eb3363e881fa40c448b1d0364e4d84bd,
         type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8860809261799644832, guid: eb3363e881fa40c448b1d0364e4d84bd,
+    - target: {fileID: 4966775060868278423, guid: eb3363e881fa40c448b1d0364e4d84bd,
         type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8860809261799644832, guid: eb3363e881fa40c448b1d0364e4d84bd,
+    - target: {fileID: 4966775060868278423, guid: eb3363e881fa40c448b1d0364e4d84bd,
         type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8860809261799644832, guid: eb3363e881fa40c448b1d0364e4d84bd,
+    - target: {fileID: 4966775060868278423, guid: eb3363e881fa40c448b1d0364e4d84bd,
         type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 8860809261799644832, guid: eb3363e881fa40c448b1d0364e4d84bd,
+    - target: {fileID: 4966775060868278423, guid: eb3363e881fa40c448b1d0364e4d84bd,
         type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8860809261799644832, guid: eb3363e881fa40c448b1d0364e4d84bd,
+    - target: {fileID: 4966775060868278423, guid: eb3363e881fa40c448b1d0364e4d84bd,
         type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8860809261799644832, guid: eb3363e881fa40c448b1d0364e4d84bd,
+    - target: {fileID: 4966775060868278423, guid: eb3363e881fa40c448b1d0364e4d84bd,
         type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8860809261799644832, guid: eb3363e881fa40c448b1d0364e4d84bd,
+    - target: {fileID: 4966775060868278423, guid: eb3363e881fa40c448b1d0364e4d84bd,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8860809261799644832, guid: eb3363e881fa40c448b1d0364e4d84bd,
+    - target: {fileID: 4966775060868278423, guid: eb3363e881fa40c448b1d0364e4d84bd,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8860809261799644832, guid: eb3363e881fa40c448b1d0364e4d84bd,
+    - target: {fileID: 4966775060868278423, guid: eb3363e881fa40c448b1d0364e4d84bd,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8860809261799644835, guid: eb3363e881fa40c448b1d0364e4d84bd,
+    - target: {fileID: 4966775060868278424, guid: eb3363e881fa40c448b1d0364e4d84bd,
         type: 3}
       propertyPath: m_Name
       value: Player Character Compilation
@@ -4925,7 +4925,7 @@ Transform:
   - {fileID: 7853093176735795468}
   - {fileID: 6030147151489452386}
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &6030147151342411380
 Rigidbody:
@@ -4959,19 +4959,6 @@ MonoBehaviour:
   _debugUpdateActionCall: 0
   _debugPlayerActionCall: 0
   _debugInputActionCall: 0
-  _keyOption:
-    moveForward: 119
-    moveBackward: 115
-    moveLeft: 97
-    moveRight: 100
-    run: 306
-    roll: 304
-    jump: 32
-    showCursorToggle: 308
-    changeViewToggle: 96
-    changeBehaviorMode: 9
-    attack: 0
-    rideOnVehicle: 103
   _speedOption:
     attackSpeed: 1
     moveSpeed: 3
@@ -4979,11 +4966,7 @@ MonoBehaviour:
   _moveOption:
     rollDistance: 3
     jumpForce: 5.5
-  _firstPersonCameraOption:
-    rotationSpeed: 2
-    lookUpDegree: -60
-    lookDownDegree: 75
-  _thirdPersonCameraOption:
+  _cameraOption:
     rotationSpeed: 2
     lookUpDegree: -60
     lookDownDegree: 75
@@ -4994,7 +4977,6 @@ MonoBehaviour:
     doubleJump: 0
     airTumbling: 0
   _state:
-    behaviorMode: 0
     isDead: 0
     isStunned: 0
     isBinded: 0
@@ -5002,32 +4984,26 @@ MonoBehaviour:
     isAdjcentToWall: 0
     isRolling: 0
     isMoving: 0
-    isWalking: 0
     isRunning: 0
     isAttacking: 0
     isCursorVisible: 0
+    isUsingPancake: 0
   _currentStates:
     rollCooldown: 0
-    attackCooldown: 0
-    firstAttackCooldown: 0
-    secondAttackCooldown: 0
+    toolCooldown: 0
     castDuration: 0
     rollDuration: 0
     stunDuration: 0
     bindDuration: 0
-    secondAttackChanceDuration: 0
-    thirdAttackChanceDuration: 0
-    distFromGround: 0
+    changeModeDuration: 0
+    behaviorMode: 0
     attackMotionIndex: 0
-    doubleJumped: 0
-    secondAttacked: 0
-    thirdAttacked: 0
     moveDirection: 0
     cameraView: 1
     vehicle: {fileID: 0}
-    tool: {fileID: 0}
-    handType: 0
-    toolType: 0
+    normalTool: {fileID: 0}
+    battleWeapon: {fileID: 0}
+    selctedPancakeIndex: 0
 --- !u!1 &6030147151489452385
 GameObject:
   m_ObjectHideFlags: 0

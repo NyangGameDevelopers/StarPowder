@@ -31,9 +31,9 @@ public partial class CharacterCore : MonoBehaviour
 
     private void InitializeComponents()
     {
-        PbMove = GetComponent<Rito.FpsTpsCharacter.PhysicsBasedMovement>();
+        PbMove = GetComponent<Rito.CharacterControl.PhysicsBasedMovement>();
         if(PbMove == null)
-            PbMove = gameObject.AddComponent<Rito.FpsTpsCharacter.PhysicsBasedMovement>();
+            PbMove = gameObject.AddComponent<Rito.CharacterControl.PhysicsBasedMovement>();
 
         // Marks (중요)
         var charRig = GetComponentInChildren<CharacterMark>(); // 활성화된 캐릭터만 찾기
