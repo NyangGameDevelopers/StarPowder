@@ -466,27 +466,22 @@ public partial class CharacterCore : MonoBehaviour
         State.isRunning = Binding[UserAction.Run].GetKey();
         State.isGrounded = PbMove.IsGrounded();
 
-        // 부드러운 애니메이션을 위해 러프값 제공
-        float goalValue = Mathf.Clamp(RBody.velocity.y, -1f, 1f);
+
+        float yValue = Mathf.Clamp(RBody.velocity.y, -1f, 1f);
 
         // 애니메이션 파라미터 설정
         float mul = State.isMoving ? (State.isRunning ? 1f : 0.5f) : 0f;
-        animSpeedX = Mathf.Lerp(animSpeedX, animDir.x * mul, 0.05f);
-        animSpeedZ = Mathf.Lerp(animSpeedZ, animDir.z * mul, 0.05f);
-        animSpeedY = Mathf.Lerp(animSpeedY, goalValue, 0.05f);
 
-        if (State.isGrounded)
-        {
-            Anim.SetFloat("Move X", animSpeedX);
-            Anim.SetFloat("Move Z", animSpeedZ);
-        }
-        else
-        {
-            Anim.SetFloat("Move X", 0f);
-            Anim.SetFloat("Move Z", 0f);
-        }
+        animSpeedX = State.isGrounded ? animDir.x * mul : 0f;
+        animSpeedZ = State.isGrounded ? animDir.z * mul : 0f;
+        animSpeedY = State.isGrounded ? 0f : yValue;
 
-        Anim.SetFloat("Move Y", animSpeedY);
+        // 부드럽게 전달
+        float deltaTime = Time.deltaTime;
+        Anim.SetFloat("Move X", animSpeedX, 0.05f, deltaTime);
+        Anim.SetFloat("Move Z", animSpeedZ, 0.05f, deltaTime);
+        Anim.SetFloat("Move Y", animSpeedY, 0.05f, deltaTime);
+
 
         if (_moveDir.magnitude > 0.1f)
             Debug.Mark(_debugInputActionCall);
