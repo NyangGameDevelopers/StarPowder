@@ -31,8 +31,10 @@ MonoBehaviour:
     assemblyNames:
     - Assembly-CSharp
     - Assembly-CSharp-firstpass
+    - VoxelTerrain.Core
     - Boxophobic.Utils.Scripts
     - LoadingScreen.Misc
+    - VoxelTerrain.Modules
     - Boxophobic.PolyverseSkies.Runtime
     - Boxophobic.PolyverseSkies.Scripts
     - Boxophobic.Utils.Editor
