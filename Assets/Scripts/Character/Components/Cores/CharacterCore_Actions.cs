@@ -486,7 +486,7 @@ public partial class CharacterCore : MonoBehaviour
         if (_moveDir.magnitude > 0.1f)
             Debug.Mark(_debugInputActionCall);
     }
-    private float animSpeedX = 0f; // 부드러운 이동을 위해 이전 값 기억 (Lerp)
+    private float animSpeedX = 0f;
     private float animSpeedY = 0f;
     private float animSpeedZ = 0f;
 
